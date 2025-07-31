@@ -25,7 +25,7 @@ export default function NotamInformation({facility, initialNotams, radar,}: {
     }, [facility]);
 
     return (
-        <Grid2 size={radar ? 10 : 5} sx={{border: 1, overflowY: 'auto', }}>
+        <Grid2 size={radar ? 5 : 5} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">NOTAM</Typography>
             <Box height={250} sx={{overflow: 'auto',}}>
                 {notams.map((notam, idx) => (

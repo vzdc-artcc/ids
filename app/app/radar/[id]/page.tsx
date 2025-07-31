@@ -14,6 +14,7 @@ import {Metadata} from "next";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/auth/auth";
 import AirportAtisGridItems from '@/components/Airport/AirportAtisGridItems';
+import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const params = await props.params;
@@ -77,6 +78,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             <RadarChartSelector airports={radar.connectedAirports}/>
             <TmuGridItem facility={radar.facility}/>
             <NotamInformation facility={radar.facility} initialNotams={radar.notams} radar/>
+            <SuaRequestInformation/>
             <ButtonsTray radar={radar}/>
             <Viewer/>
         </Grid2>
