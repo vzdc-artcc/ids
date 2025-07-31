@@ -41,7 +41,7 @@ export default function AirportRadarInformation({icao, radars}: { icao: string, 
             socket.off('vatsim-data');
             socket.off('radar-consolidation');
         };
-    }, [radars]);
+    }, [radars, icao]);
 
     return (
         <>

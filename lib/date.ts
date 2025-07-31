@@ -2,7 +2,7 @@ export const formatZuluDate = (date: Date) => {
     const d = new Date(date);
     let month = '' + (d.getUTCMonth() + 1);
     let day = '' + d.getUTCDate();
-    let year = d.getUTCFullYear().toString().substr(-2);
+    const year = d.getUTCFullYear().toString().substring(2);
     let hour = '' + d.getUTCHours();
     let minute = '' + d.getUTCMinutes();
 
