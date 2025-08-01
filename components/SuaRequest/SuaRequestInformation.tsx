@@ -30,7 +30,7 @@ export default function SuaRequestInformation() {
     useEffect(() => {
         const intervalId = setInterval(() => {
             fetchSuaRequests().then(setSuaRequests);
-        }, 5000);
+        }, 30000);
 
         socket.on("sua-activate", (id: string) => {
             setActiveSua((prev) => [...prev, id]);
@@ -63,7 +63,7 @@ export default function SuaRequestInformation() {
             <Typography variant="h6">SUA</Typography>
             <Box height={250} sx={{overflow: 'auto',}}>
                 {!suaRequests && <CircularProgress/>}
-                {!suaRequests && <Typography>Loading will take at least 1 minute.</Typography>}
+                {!suaRequests && <Typography>Loading will take at most 1 minute.</Typography>}
                 <Grid2 container columns={2} spacing={1}>
                     {suaRequests && suaRequests.map((request) => (
                         <Grid2 size={{xs: 2, lg: 1}} key={request.id} sx={{p: 0.5, border: 1, borderColor: 'red',}}>
