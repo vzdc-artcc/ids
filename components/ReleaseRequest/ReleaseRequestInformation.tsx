@@ -36,13 +36,13 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             socket.off('release-time');
             socket.off('delete-release-request');
         }
-    }, []);
+    }, [cid, facility, releaseRequests]);
 
     return (
         <Grid2 size={5} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">RELEASE</Typography>
             {releaseRequests?.map((releaseRequest) => (
-                <Typography color={releaseRequest.releaseTime ? 'limegreen' : 'gold'}>{releaseRequest.callsign} -&gt; {releaseRequest.releaseTime ? `RELEASED AT ${formatZuluDate(releaseRequest.releaseTime, true)}` : '-/-'}</Typography>
+                <Typography key={releaseRequest.id} color={releaseRequest.releaseTime ? 'limegreen' : 'gold'}>{releaseRequest.callsign} -&gt; {releaseRequest.releaseTime ? `RELEASED AT ${formatZuluDate(releaseRequest.releaseTime, true)}` : '-/-'}</Typography>
             ))}
         </Grid2>
     );

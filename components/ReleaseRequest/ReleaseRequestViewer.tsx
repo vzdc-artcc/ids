@@ -32,7 +32,7 @@ export default function ReleaseRequestViewer() {
         return () => {
             socket.off('new-release-request');
         }
-    }, []);
+    }, [releaseRequests]);
 
     const deleteAll = async (past: boolean) => {
         deleteReleaseRequests(past).then(() => {

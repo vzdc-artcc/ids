@@ -22,7 +22,7 @@ export default function MessageListener({ facility, cid }: { facility: string, c
             socket.off(`msg-${facility}`);
             socket.off(`msg-${cid}`);
         }
-    }, []);
+    }, [cid, facility]);
     return (
         <Dialog open={open} onClose={() => setOpen(false)}>
             <DialogTitle>Message from TMU</DialogTitle>
