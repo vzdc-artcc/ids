@@ -13,6 +13,7 @@ import AirportSettings from "@/components/Viewer/AirportSettings";
 import RadarSettings from "@/components/Viewer/RadarSettings";
 import Consolidation from "@/components/Viewer/Consolidation";
 import { SessionProvider } from 'next-auth/react';
+import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
 
 export default function Viewer() {
 
@@ -20,7 +21,10 @@ export default function Viewer() {
 
     const display = searchParams.get('viewer');
     const prdStartAirport = searchParams.get('startAirport');
-    const sopFacility = searchParams.get('facility');
+
+    const facility = searchParams.get('facility');
+
+
 
     return (
         <Grid2 size={12} sx={{border: 1, minHeight: 950,}}>
@@ -31,12 +35,13 @@ export default function Viewer() {
                 {display === 'emergency' && <EmergencyChecklist/>}
                 {display === 'position' && <PositionChecklist/>}
                 {display === 'wx' && <Weather/>}
-                {display === 'sop' && <SopViewer defaultFacility={sopFacility || undefined}/>}
+                {display === 'sop' && <SopViewer defaultFacility={facility || undefined}/>}
                 {display === 'prd' && <PreferredRoutes startAirport={prdStartAirport || undefined}/>}
                 {display === 'airspace' && <Airspace/>}
                 {display === 'set-airport' && <AirportSettings/>}
                 {display === 'set-radar' && <RadarSettings/>}
                 {display === 'consol' && <Consolidation/>}
+                {display === 'rel' && <ReleaseWindow facilityId={facility || ''} />}
             </SessionProvider>
         </Grid2>
     );

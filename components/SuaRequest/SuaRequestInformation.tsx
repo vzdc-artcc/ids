@@ -28,6 +28,11 @@ export default function SuaRequestInformation() {
     const [activeSuas, setActiveSua] = useState<string[]>([]);
 
     useEffect(() => {
+
+        if (!suaRequests) {
+            fetchSuaRequests().then(setSuaRequests);
+        }
+
         const intervalId = setInterval(() => {
             fetchSuaRequests().then(setSuaRequests);
         }, 30000);

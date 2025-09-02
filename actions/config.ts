@@ -58,14 +58,6 @@ export const importConfigFile = async (zipFile: Uint8Array) => {
         data: config.facilities,
     });
 
-    await prisma.airport.createMany({
-        data: config.airports,
-    });
-
-    await prisma.airportRunway.createMany({
-        data: config.runways,
-    });
-
     await prisma.radar.createMany({
         data: config.radars.map(radar => ({
             ...radar,
@@ -78,6 +70,14 @@ export const importConfigFile = async (zipFile: Uint8Array) => {
             ...radarSector,
             borderingSectors: undefined,
         })),
+    });
+
+    await prisma.airport.createMany({
+        data: config.airports,
+    });
+
+    await prisma.airportRunway.createMany({
+        data: config.runways,
     });
 
     await prisma.flowPreset.createMany({

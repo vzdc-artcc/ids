@@ -1,4 +1,4 @@
-export const formatZuluDate = (date: Date) => {
+export const formatZuluDate = (date: Date, dayInDateOnly?: boolean) => {
     const d = new Date(date);
     let month = '' + (d.getUTCMonth() + 1);
     let day = '' + d.getUTCDate();
@@ -11,5 +11,8 @@ export const formatZuluDate = (date: Date) => {
     if (hour.length < 2) hour = '0' + hour;
     if (minute.length < 2) minute = '0' + minute;
 
+    if (dayInDateOnly) {
+        return `${day}/` + [hour, minute].join('') + 'z';
+    }
     return [month, day, year].join('/') + ' ' + [hour, minute].join('') + 'z';
 };

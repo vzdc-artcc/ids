@@ -4,7 +4,6 @@ import {notFound} from "next/navigation";
 import {Grid2} from "@mui/material";
 import Viewer from "@/components/Viewer/Viewer";
 import ButtonsTray from "@/components/Tray/ButtonsTray";
-import NotamInformation from "@/components/Notam/NotamInformation";
 import TmuGridItem from "@/components/Tmu/TmuGridItem";
 import AirportInformationSmall from "@/components/Airport/AirportInformationSmall";
 import RadarBorderingSectorsGridItem from "@/components/Radar/RadarBorderingSectorsGridItem";
@@ -15,6 +14,8 @@ import {getServerSession} from "next-auth";
 import {authOptions} from "@/auth/auth";
 import AirportAtisGridItems from '@/components/Airport/AirportAtisGridItems';
 import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation";
+import MessageListener from "@/components/Message/MessageListener";
+import ReleaseRequestInformation from "@/components/ReleaseRequest/ReleaseRequestInformation";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const params = await props.params;
@@ -66,6 +67,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
     return session?.user && (
         <Grid2 container columns={12}>
+            <MessageListener facility={id} cid={session.user.cid} />
             <Grid2 size={8} height={250} sx={{border: 1, overflowY: 'auto', }}>
                 {radar.connectedAirports.map((airport) => (
                     <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}/>
@@ -77,7 +79,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>
             <RadarChartSelector airports={radar.connectedAirports}/>
             <TmuGridItem facility={radar.facility}/>
-            <NotamInformation facility={radar.facility} initialNotams={radar.notams} radar/>
+            <ReleaseRequestInformation facility={id} cid={session.user.cid} />
+            {/*<NotamInformation facility={radar.facility} initialNotams={radar.notams} radar/>*/}
             <SuaRequestInformation/>
             <ButtonsTray radar={radar}/>
             <Viewer/>

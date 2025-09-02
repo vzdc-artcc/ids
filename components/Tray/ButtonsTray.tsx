@@ -21,6 +21,9 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                     <Link href={redirectToViewer('wx')} style={{color: 'inherit',}}>
                         <Button color="inherit" style={{borderTopLeftRadius:'0px',borderBottomLeftRadius:"0px"}}>WX</Button>
                     </Link>
+                    <Link href={redirectToViewer('rel', new URLSearchParams({facility: airport?.facilityId || radar?.facilityId || '',}))} style={{ color: 'inherit', }}>
+                        <Button color="inherit" sx={{ backgroundColor: 'lightcyan', color: 'black' }}>REL</Button>
+                    </Link>
                     <Link href={redirectToViewer('prd', new URLSearchParams({startAirport: airport?.iata || '',}))}>
                         <Button color="success">PRD</Button>
                     </Link>
@@ -32,8 +35,8 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                         href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/publications/downloads'}))}>
                         <Button color="secondary">PUB</Button>
                     </Link>
-                    <Link href={redirectToViewer('airspace')}>
-                        <Button color="secondary">ASPC</Button>
+                    <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://asx.vzdc.org'}))}>
+                        <Button color="secondary">ASX</Button>
                     </Link>
                     <Link href={redirectToViewer('set-airport')}>
                         <Button color="info">ARP/SET</Button>
@@ -59,11 +62,6 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                     <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/'}))}
                           style={{color: 'inherit'}}>
                         <Button variant="outlined" color="inherit" size="small" style={{borderTopRightRadius:'0px',borderBottomRightRadius:"0px"}}>VZDC WEBSITE</Button>
-                    </Link>
-                    <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://asx.vzdc.org/'}))}
-                          style={{color: 'inherit'}}>
-                        <Button variant="outlined" color="inherit" size="small"
-                                style={{borderTopRightRadius: '0px', borderBottomRightRadius: "0px"}}>ASX</Button>
                     </Link>
                 </ButtonGroup>
                 <Typography sx={{mt: 4,}}>&copy; 2024 vZDC</Typography>
