@@ -53,7 +53,7 @@ export default function SuaRequestInformation() {
             socket.off("sua-activate");
             socket.off("sua-deactivate");
         };
-    });
+    }, [suaRequests]);
 
     const toggleActiveSuaRequest = (id: string) => {
         if (activeSuas.includes(id)) {

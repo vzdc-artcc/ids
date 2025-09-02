@@ -44,7 +44,7 @@ export default function ReleaseRequestViewer() {
 
     return (
         <>
-            <Button variant="contained" color="error" size="small" startIcon={<Delete />} sx={{ mb: 2, mr: 2, }} onClick={() => deleteAll()}>Delete All</Button>
+            <Button variant="contained" color="error" size="small" startIcon={<Delete />} sx={{ mb: 2, mr: 2, }} onClick={() => deleteAll(false)}>Delete All</Button>
             <Button variant="contained" color="warning" size="small" startIcon={<Delete />} sx={{ mb: 2, }} onClick={() => deleteAll(true)}>Delete Past-20</Button>
             {releaseRequests?.map((releaseRequest) => (
                 <Grid2 container columns={13} key={releaseRequest.id} spacing={3} alignItems="center" sx={{ borderTop: 1, minHeight: 50, mx: 2, }}>

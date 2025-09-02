@@ -57,7 +57,7 @@ export default async function Page({params}: { params: Promise<{ id: string }> }
 
     const session = await getServerSession(authOptions);
 
-    return (
+    return session?.user && (
         <Grid2 container columns={12}>
             <MessageListener facility={id} cid={session.user.cid} />
             <AirportAtisGridItems icao={airport.icao} atisIntegrationDisabled={airport.disableAutoAtis}/>
