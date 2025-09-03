@@ -1,6 +1,6 @@
 'use client';
 import React, {useEffect, useState} from 'react';
-import {Box, CircularProgress, Divider, Grid2, Switch, Tooltip, Typography} from "@mui/material";
+import {Box, Divider, Grid2, Switch, Tooltip, Typography} from "@mui/material";
 import {fetchSuaRequests} from "@/actions/sua";
 import {socket} from "@/lib/socket";
 import {formatZuluDate} from "@/lib/date";
