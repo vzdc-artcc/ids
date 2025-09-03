@@ -12,10 +12,14 @@ export default function MessageListener({ facility, cid }: { facility: string, c
         socket.on(`msg-${facility}`, (msg) => {
             setMessage(msg);
             setOpen(true);
+
+            playNewMessage().then();
         });
         socket.on(`msg-${cid}`, (msg) => {
             setMessage(msg);
             setOpen(true);
+
+            playNewMessage().then();
         })
 
         return () => {
@@ -23,8 +27,14 @@ export default function MessageListener({ facility, cid }: { facility: string, c
             socket.off(`msg-${cid}`);
         }
     }, [cid, facility]);
+
+    const playNewMessage = async () => {
+        const audio = new Audio(`/sound/new_message.mp3`);
+        await audio.play();
+    }
+
     return (
-        <Dialog open={open} onClose={() => setOpen(false)}>
+        <Dialog open={open}>
             <DialogTitle>Message from TMU</DialogTitle>
             <DialogContent>
                 <DialogContentText>{message}</DialogContentText>

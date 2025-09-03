@@ -22,13 +22,14 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         socket.on('release-time', (rr) => {
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequests);
 
-            toast.warning(`Release time for ${rr.callsign} updated.`);
+            toast.warning(`Release time for ${rr.callsign} updated.`, { autoClose: 15*1000 });
+            playNewReleaseTime().then();
         });
 
         socket.on('delete-release-request', () => {
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequests);
 
-            toast.warning(`Some release requests were deleted. Please check the list.`)
+            toast.warning(`Some release requests were deleted. Please check the list.`, { autoClose: 10*1000 })
         });
 
         return () => {
@@ -38,11 +39,16 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         }
     }, [cid, facility, releaseRequests]);
 
+    const playNewReleaseTime = async () => {
+        const audio = new Audio(`/sound/release_time_update.mp3`);
+        await audio.play();
+    }
+
     return (
         <Grid2 size={5} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">RELEASE</Typography>
             {releaseRequests?.map((releaseRequest) => (
-                <Typography key={releaseRequest.id} color={releaseRequest.releaseTime ? 'limegreen' : 'gold'}>{releaseRequest.callsign} -&gt; {releaseRequest.releaseTime ? `RELEASED AT ${formatZuluDate(releaseRequest.releaseTime, true)}` : '-/-'}</Typography>
+                <Typography key={releaseRequest.id} color={releaseRequest.releaseTime ? 'limegreen' : 'gold'}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime ? `RELEASED AT ${formatZuluDate(releaseRequest.releaseTime, true)}` : '-/-'}</Typography>
             ))}
         </Grid2>
     );
