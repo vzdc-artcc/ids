@@ -34,9 +34,9 @@ export default function ReleaseRequestButtons({ releaseRequest }: { releaseReque
                 <Button color="success" onClick={() => updateReleaseTime(new Date())}>NOW</Button>
                 <Button color="success" onClick={() => updateReleaseTime(new Date((new Date()).getTime() + 1000*60*5))}>N+5</Button>
                 <Button color="warning" onClick={async () => {
-                    const m = Number(prompt("Minutes from now"));
+                    const m = Number(prompt("Minutes from NOW"));
                     await updateReleaseTime(new Date((new Date()).getTime() + 1000*60*m));
-                }}>ZULU</Button>
+                }}>MINS</Button>
                 <Button color="info" onClick={onInfo}>{releaseRequest.initFacility} - {releaseRequest.startedBy.cid}</Button>
                 <Button color="error" onClick={onDeleteReleaseRequest}>DEL</Button>
             </ButtonGroup>

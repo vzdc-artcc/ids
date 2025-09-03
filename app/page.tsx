@@ -1,4 +1,4 @@
-import {Card, CardContent, List, ListItemButton, ListItemText, ListSubheader, Typography} from "@mui/material";
+import {Button, Card, CardContent, List, ListItemButton, ListItemText, ListSubheader, Typography} from "@mui/material";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/auth/auth";
 import prisma from "@/lib/db";
@@ -60,6 +60,12 @@ export default async function Home() {
                     }}
                     subheader={<li/>}
                 >
+                    <Link href={`/app/tmu`}
+                          style={{color: 'limegreen', textDecoration: 'none',}}>
+                        <ListItemButton>
+                            <ListItemText primary="IDS TMU"/>
+                        </ListItemButton>
+                    </Link>
                     <li>
                         <ul>
                             <ListSubheader>Airports</ListSubheader>
