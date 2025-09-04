@@ -56,10 +56,10 @@ export default function ReleaseRequestViewer() {
                     </Grid2>
                     <Grid2 size={1}>
                         <Typography>{releaseRequest.callsign}</Typography>
-                        { releaseRequest.releaseTime && <Typography variant="caption" color="limegreen">{formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
                     </Grid2>
                     <Grid2 size={1}>
                         <Typography>{formatZuluDate(releaseRequest.initTime, true)}</Typography>
+                        { releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">{formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
                     </Grid2>
                     <Grid2 size={1}>
                         <Typography color="red">{releaseRequest.aircraftType}</Typography>

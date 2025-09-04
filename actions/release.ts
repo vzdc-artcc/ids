@@ -20,9 +20,10 @@ export const fetchReleaseRequestsFiltered = async (cid: string, facility: string
                 },
             ],
         },
-        orderBy: {
-            releaseTime: 'asc',
-        },
+        orderBy: [
+            { releaseTime: 'asc', },
+            { initTime: 'asc',}
+        ],
         include: {
             startedBy: true,
         }
@@ -94,8 +95,8 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
     const request = await prisma.releaseRequest.create({
         data: {
             callsign: result.data.callsign,
-            origin: result.data.origin,
-            destination: result.data.destination,
+            origin: result.data.origin.startsWith('K') && result.data.origin.length === 4 ? result.data.origin.substring(1) : result.data.origin,
+            destination: result.data.destination.startsWith('K') && result.data.destination.length === 4 ? result.data.destination.substring(1) : result.data.destination,
             aircraftType: result.data?.aircraftType,
             freeText: result.data?.freeText,
             initFacility: facility,

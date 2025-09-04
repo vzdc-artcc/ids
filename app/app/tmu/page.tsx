@@ -1,9 +1,10 @@
 import React from 'react';
-import {Grid2, Typography} from "@mui/material";
+import {Divider, Grid2, Typography} from "@mui/material";
 import AirportAtisGridItems from "@/components/Airport/AirportAtisGridItems";
 import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation";
 import ReleaseRequestViewer from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import MessageForm from "@/components/ReleaseRequest/MessageForm";
+import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
 
 export default async function Page() {
 
@@ -33,6 +34,8 @@ export default async function Page() {
                 {/*    <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}/>*/}
                 {/*))}*/}
                 <SuaRequestInformation />
+                <Divider sx={{ my: 2, }}/>
+                <ReleaseWindow facilityId="TMU" />
             </Grid2>
             <Grid2 size={2} sx={{ border: 1, }}>
                 <MessageForm />
