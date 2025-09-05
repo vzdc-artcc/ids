@@ -22,12 +22,6 @@ export default function ReleaseRequestViewer() {
 
     const [releaseRequests, setReleaseRequests] = useState<ReleaseRequestWithAll[]>();
 
-    const refreshReleaseRequests = useCallback(async () => {
-        const releaseRequests = await fetchReleaseRequests();
-
-        setReleaseRequests(filterExpiredReleases(releaseRequests));
-    }, []);
-
     const filterExpiredReleases = useCallback((reqs: ReleaseRequestWithAll[]) => {
         const now = new Date();
         return reqs.filter((rr) => {
@@ -40,6 +34,12 @@ export default function ReleaseRequestViewer() {
             return shouldDelete;
         })
     }, []);
+
+    const refreshReleaseRequests = useCallback(async () => {
+        const releaseRequests = await fetchReleaseRequests();
+
+        setReleaseRequests(filterExpiredReleases(releaseRequests));
+    }, [filterExpiredReleases]);
 
     useEffect(() => {
 
