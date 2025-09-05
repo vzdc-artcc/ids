@@ -11,9 +11,10 @@ export default function ReleaseRequestButtons({ releaseRequest, onUpdate }: { re
     const onDeleteReleaseRequest = async () => {
         const r = await deleteReleaseRequest(releaseRequest.id);
 
-        socket.emit('delete-release-request', r.id);
-
-        onUpdate();
+        if (r) {
+            socket.emit('delete-release-request', r.id);
+            onUpdate();
+        }
     }
 
     const onInfo = () => {

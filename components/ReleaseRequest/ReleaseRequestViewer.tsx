@@ -22,11 +22,11 @@ export default function ReleaseRequestViewer() {
 
     const [releaseRequests, setReleaseRequests] = useState<ReleaseRequestWithAll[]>();
 
-    const refreshReleaseRequests = async () => {
+    const refreshReleaseRequests = useCallback(async () => {
         const releaseRequests = await fetchReleaseRequests();
 
         setReleaseRequests(filterExpiredReleases(releaseRequests));
-    }
+    }, []);
 
     const filterExpiredReleases = useCallback((reqs: ReleaseRequestWithAll[]) => {
         const now = new Date();
@@ -65,7 +65,7 @@ export default function ReleaseRequestViewer() {
 
             socket.off('new-release-request');
         }
-    }, [releaseRequests, filterExpiredReleases]);
+    }, [releaseRequests, refreshReleaseRequests, filterExpiredReleases]);
 
     const deleteAll = async (past: boolean) => {
         deleteReleaseRequests(past).then(() => {
