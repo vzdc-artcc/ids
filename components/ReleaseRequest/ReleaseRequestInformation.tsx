@@ -1,5 +1,5 @@
 'use client'
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {ReleaseRequestWithAll} from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import {socket} from "@/lib/socket";
 import {fetchReleaseRequestsFiltered} from "@/actions/release";
@@ -17,8 +17,10 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
 
     const [releaseRequests, setReleaseRequestsStates] = useState<ReleaseRequestWithStatus[]>();
 
-    const setReleaseRequestsWithStatus = (releaseRequests: ReleaseRequestWithAll[]) => {
-        setReleaseRequestsStates(releaseRequests.map((rr) => {
+    const setReleaseRequestsWithStatus = useCallback((releaseRequests: ReleaseRequestWithAll[]) => {
+        setReleaseRequestsStates(releaseRequests.filter((rr) => {
+            return !rr.releaseTime || new Date(rr.releaseTime.getTime() + 1000*60*10) > new Date();
+        }).map((rr) => {
 
             const lowerDate = rr.releaseTime && new Date(rr.releaseTime.getTime() - 1000*60);
             const upperDate = rr.releaseTime && new Date(rr.releaseTime.getTime() + 1000*60*2);
@@ -42,8 +44,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
                 lowerDate,
                 upperDate,
             } as ReleaseRequestWithStatus;
-        }));
-    }
+        }))}, []);
 
     useEffect(() => {
         if (!releaseRequests) {
@@ -53,17 +54,15 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
         });
 
-        socket.on('release-time', (rr) => {
+        socket.on('refresh-release', (rr) => {
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
 
-            toast.info(`Release time for ${rr.callsign} updated.`, { autoClose: false, closeOnClick: true, theme: "colored", });
+            toast.info(`Release time for ${rr.callsign} updated to ${formatZuluDate(rr.releaseTime as Date, true)}.`, { autoClose: false, closeOnClick: true, theme: "colored", });
             playNewReleaseTime().then();
         });
 
         socket.on('delete-release-request', () => {
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
-
-            toast.info(`Some release requests were deleted. Please check the list.`, { autoClose: 10*1000 })
         });
 
         const intervalId = setInterval(() => {
@@ -76,10 +75,10 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             clearInterval(intervalId);
 
             socket.off('new-release-request');
-            socket.off('release-time');
+            socket.off('refresh-release');
             socket.off('delete-release-request');
         }
-    }, [cid, facility, releaseRequests]);
+    }, [cid, facility, releaseRequests, setReleaseRequestsWithStatus]);
 
     const playNewReleaseTime = async () => {
         const audio = new Audio(`/sound/release_time_update.mp3`);

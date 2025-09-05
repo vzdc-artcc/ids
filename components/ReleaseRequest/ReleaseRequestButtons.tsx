@@ -6,14 +6,14 @@ import {deleteReleaseRequest, setReleaseTime} from "@/actions/release";
 import {socket} from "@/lib/socket";
 import {toast} from "react-toastify";
 
-export default function ReleaseRequestButtons({ releaseRequest }: { releaseRequest: ReleaseRequestWithAll }) {
+export default function ReleaseRequestButtons({ releaseRequest, onUpdate }: { releaseRequest: ReleaseRequestWithAll, onUpdate: () => void }) {
 
     const onDeleteReleaseRequest = async () => {
         const r = await deleteReleaseRequest(releaseRequest.id);
 
         socket.emit('delete-release-request', r.id);
 
-        window.location.reload();
+        onUpdate();
     }
 
     const onInfo = () => {
@@ -23,9 +23,9 @@ export default function ReleaseRequestButtons({ releaseRequest }: { releaseReque
     const updateReleaseTime = async (time: Date) => {
         await setReleaseTime(releaseRequest.id, time);
 
-        socket.emit('release-time', releaseRequest);
+        socket.emit('refresh-release', releaseRequest);
 
-        window.location.reload();
+        onUpdate();
     }
 
     return (
@@ -35,7 +35,9 @@ export default function ReleaseRequestButtons({ releaseRequest }: { releaseReque
                 <Button color="success" onClick={() => updateReleaseTime(new Date((new Date()).getTime() + 1000*60*5))}>N+5</Button>
                 <Button color="warning" onClick={async () => {
                     const m = Number(prompt("Minutes from NOW"));
-                    await updateReleaseTime(new Date((new Date()).getTime() + 1000*60*m));
+                    if (m > 0) {
+                        await updateReleaseTime(new Date((new Date()).getTime() + 1000*60*m));
+                    }
                 }}>MINS</Button>
                 <Button color="info" onClick={onInfo}>{releaseRequest.initFacility} - {releaseRequest.startedBy.cid}</Button>
                 <Button color="error" onClick={onDeleteReleaseRequest}>DEL</Button>

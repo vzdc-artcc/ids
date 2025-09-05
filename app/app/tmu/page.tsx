@@ -5,6 +5,7 @@ import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation
 import ReleaseRequestViewer from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import MessageForm from "@/components/ReleaseRequest/MessageForm";
 import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
+import {fetchReleaseRequests} from "@/actions/release";
 
 export default async function Page() {
 
@@ -16,6 +17,7 @@ export default async function Page() {
     //         runways: true,
     //     },
     // });
+
 
     return (
         <Grid2 container columns={6}>
@@ -35,7 +37,7 @@ export default async function Page() {
                 {/*))}*/}
                 <SuaRequestInformation />
                 <Divider sx={{ my: 2, }}/>
-                <ReleaseWindow facilityId="TMU" />
+                <ReleaseWindow facilityId="" />
             </Grid2>
             <Grid2 size={2} sx={{ border: 1, }}>
                 <MessageForm />

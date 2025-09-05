@@ -53,6 +53,17 @@ export const fetchReleaseRequest = async (id: string) => {
 }
 
 export const deleteReleaseRequest = async (id: string) => {
+
+    const existing = await prisma.releaseRequest.findUnique({
+        where: {
+            id,
+        }
+    });
+
+    if (!existing) {
+        return;
+    }
+
     const request = prisma.releaseRequest.delete({
         where: {
             id,
@@ -99,7 +110,7 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
             destination: result.data.destination.startsWith('K') && result.data.destination.length === 4 ? result.data.destination.substring(1) : result.data.destination,
             aircraftType: result.data?.aircraftType,
             freeText: result.data?.freeText,
-            initFacility: facility,
+            initFacility: facility.toUpperCase(),
             startedById: session.user.id,
         },
     });
@@ -126,7 +137,7 @@ export const deleteReleaseRequests = async (onlyPast: boolean) => {
         await prisma.releaseRequest.deleteMany({
             where: {
                 releaseTime: {
-                    lt: new Date((new Date()).getTime() + 1000*60*20),
+                    gt: new Date((new Date()).getTime() + 1000*60*20),
                 },
             },
         });

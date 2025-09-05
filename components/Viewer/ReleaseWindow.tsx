@@ -9,7 +9,7 @@ import {socket} from "@/lib/socket";
 export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
 
     const handleSubmit = async (formData: FormData) => {
-        const { request, errors }  = await createReleaseRequest(facilityId, formData);
+        const { request, errors }  = await createReleaseRequest(facilityId || formData.get('origin') as string, formData);
 
         if (errors) {
             toast.error(errors.map(e => e.message).join('\n'));
@@ -45,6 +45,7 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
                             defaultValue={facilityId}
                             required
                             fullWidth
+                            helperText={!facilityId ? "TMU IDS ONLY: Include the facility ID of the origin (ZDC, PCT, KDCA, etc.) to have it pair to the appropriate facility." : '' }
                         />
                     </Grid2>
                     <Grid2 size={2}>
