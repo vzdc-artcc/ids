@@ -6,10 +6,12 @@ import LoginButton from "@/components/Navbar/LoginButton";
 import {Session} from "next-auth";
 import Link from "next/link";
 import getConfig from 'next/config';
+import {Consolidation} from "@/components/Viewer/Consolidation";
+import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
 
 const {IS_STAFF_ENDPOINT, DEV_MODE} = process.env;
 
-export default async function Navbar({session}: { session: Session | null, }) {
+export default async function Navbar({session, activeConsol }: { session: Session | null, activeConsol?: Consolidation }) {
 
     const res = await fetch(IS_STAFF_ENDPOINT?.replace('{cid}', session?.user.cid || 'null') || '');
     const isStaff: boolean = await res.json();
@@ -27,6 +29,12 @@ export default async function Navbar({session}: { session: Session | null, }) {
                     {DEV_MODE !== 'true' &&
                         <Typography variant="subtitle2">IDS & ERIDS v{publicRuntimeConfig?.version}</Typography>}
                 </Box>
+                <Box sx={{mx: 4, p: 0.5, border: 1, borderColor: 'gold',}}>
+                    <Typography variant="subtitle1" color={activeConsol ? 'gold' : 'red'}
+                                fontWeight="bold">{activeConsol ? `${activeConsol.primarySector.radar.facilityId} - ${activeConsol.primarySector.identifier}` : 'NO CONSOL'}</Typography>
+                    <Typography variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}</Typography>
+                </Box>
+                { activeConsol && <NavConsolidationDeleteButton id={activeConsol.id} /> }
                 <span style={{flexGrow: 1,}}></span>
                 {session && isStaff && <Link href="/admin" style={{color: 'inherit',}}>
                     <Button variant="contained" color="inherit" sx={{mr: 1,}}>ADMIN</Button>

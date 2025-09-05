@@ -16,6 +16,8 @@ import AirportAtisGridItems from '@/components/Airport/AirportAtisGridItems';
 import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation";
 import MessageListener from "@/components/Message/MessageListener";
 import ReleaseRequestInformation from "@/components/ReleaseRequest/ReleaseRequestInformation";
+import RadarConsolidationDialog from "@/components/RadarConsolidation/RadarConsolidationDialog";
+import {Consolidation} from "@/components/Viewer/Consolidation";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const params = await props.params;
@@ -63,10 +65,27 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         notFound();
     }
 
+
+
     const session = await getServerSession(authOptions);
 
-    return session?.user && (
+    if (!session?.user) {
+        return;
+    }
+
+    const myRadarConsolidation = await prisma.radarConsolidation.findFirst({
+        where: {
+            userId: session.user.id,
+        },
+        include: {
+            primarySector: true,
+            secondarySectors: true,
+            user: true,
+        }
+    });
+    return (
         <Grid2 container columns={12}>
+            <RadarConsolidationDialog session={session} existing={myRadarConsolidation as Consolidation }/>
             <MessageListener facility={id} cid={session.user.cid} />
             <Grid2 size={8} height={250} sx={{border: 1, overflowY: 'auto', }}>
                 {radar.connectedAirports.map((airport) => (

@@ -28,7 +28,7 @@ import {fetchAllDefaultRadarConsolidations} from "@/actions/defaultRadarConsolid
 import {useSession} from 'next-auth/react';
 import {fetchAllUsers} from '@/actions/user';
 
-type Consolidation = RadarConsolidation & {
+export type Consolidation = RadarConsolidation & {
     primarySector: RadarSectorWithRadar;
     secondarySectors: RadarSectorWithRadar[];
     user: User;
@@ -43,7 +43,7 @@ type DefaultRadarConsolidationWithSectors = DefaultRadarConsolidation & {
     secondarySectors: RadarSectorWithRadar[];
 }
 
-export default function Consolidation() {
+export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boolean, onCreateSuccess?: () => void}) {
 
     const session = useSession();
     const [allUsers, setAllUsers] = useState<{id: string, firstName: string | null, lastName: string | null, fullName: string | null, cid: string}[]>();
@@ -113,6 +113,7 @@ export default function Consolidation() {
                 toast.success('Consolidation updated successfully');
             } else {
                 const {error} = await createConsolidation(selectedUser.id, primarySector.id, secondarySectors.map(sector => sector.id), consolidateAllSectors);
+                onCreateSuccess?.()
             if (error) {
                 toast.error(error);
                 return;
@@ -146,7 +147,8 @@ export default function Consolidation() {
 
     return (
         <Box sx={{mx: 2}}>
-            <Card sx={{mb: 2}}>
+            { !allUsers || !allDefaultConsolidations || !allRadarSectors || !allRadarConsolidations ? <CircularProgress color="inherit"/> : null }
+            { !onlyMe && <Card sx={{mb: 2}}>
                 <CardContent>
                     <Typography variant="h6">Active Radar Consolidations</Typography>
                     <Button variant="contained" size="small"
@@ -215,7 +217,7 @@ export default function Consolidation() {
                         </Box>
                     ))}
                 </CardContent>
-            </Card>
+            </Card> }
             {!editMode && allRadarSectors && <Card>
                 <CardContent>
                     <Typography variant="h6" gutterBottom>New Radar Consolidation</Typography>

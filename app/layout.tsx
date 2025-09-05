@@ -11,6 +11,8 @@ import {authOptions} from "@/auth/auth";
 import {Container, Typography} from "@mui/material";
 import {ToastContainer} from "react-toastify";
 import {Metadata} from "next";
+import prisma from "@/lib/db";
+import {Consolidation} from "@/components/Viewer/Consolidation";
 
 const roboto = Roboto({
     weight: ['300', '400', '500', '700'],
@@ -32,12 +34,27 @@ export default async function RootLayout({
 
     const session = await getServerSession(authOptions);
 
+    const myRadarConsolidation = await prisma.radarConsolidation.findFirst({
+        where: {
+            userId: session?.user.id || '',
+        },
+        include: {
+            primarySector: {
+                include: {
+                    radar: true,
+                },
+            },
+            secondarySectors: true,
+            user: true,
+        }
+    });
+
   return (
     <html lang="en">
     <body className={roboto.variable}>
     <AppRouterCacheProvider>
         <ThemeProvider theme={theme}>
-            <Navbar session={session}/>
+            <Navbar session={session} activeConsol={myRadarConsolidation as Consolidation}/>
             <Container maxWidth="xl" sx={{display: {xs: 'inherit', lg: 'none'},}}>
                 <Typography variant="h6" textAlign="center">The I.D.S. is not made for smaller screen sizes. Please
                     increase your screen size or zoom out to access the IDS.</Typography>

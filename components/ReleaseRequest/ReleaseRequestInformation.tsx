@@ -57,7 +57,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         socket.on('refresh-release', (rr) => {
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
 
-            toast.info(`Release time for ${rr.callsign} updated to ${formatZuluDate(rr.releaseTime as Date, true)}.`, { autoClose: false, closeOnClick: true, theme: "colored", });
+            toast.info(`Release time for ${rr.callsign} updated to ${formatZuluDate(new Date(rr.releaseTime), true)}.`, { autoClose: false, closeOnClick: true, theme: "colored", });
             playNewReleaseTime().then();
         });
 
