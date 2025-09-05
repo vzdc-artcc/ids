@@ -5,7 +5,6 @@ import SuaRequestInformation from "@/components/SuaRequest/SuaRequestInformation
 import ReleaseRequestViewer from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import MessageForm from "@/components/ReleaseRequest/MessageForm";
 import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
-import {fetchReleaseRequests} from "@/actions/release";
 
 export default async function Page() {
 
