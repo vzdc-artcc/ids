@@ -1,7 +1,7 @@
 'use client';
 import React, {useState} from 'react';
 import Consolidation, {Consolidation as RadarConsolidationWithAll} from "@/components/Viewer/Consolidation";
-import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
+import {Dialog, DialogContent} from "@mui/material";
 import {Session} from "next-auth";
 import {SessionProvider} from "next-auth/react";
 
