@@ -22,9 +22,9 @@ export default function ReleaseRequestButtons({ releaseRequest, onUpdate }: { re
     }
 
     const updateReleaseTime = async (time: Date) => {
-        await setReleaseTime(releaseRequest.id, time);
+        const r = await setReleaseTime(releaseRequest.id, time);
 
-        socket.emit('refresh-release', releaseRequest);
+        socket.emit('refresh-release', r);
 
         onUpdate();
     }
