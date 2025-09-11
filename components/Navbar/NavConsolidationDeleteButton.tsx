@@ -13,6 +13,6 @@ export default function NavConsolidationDeleteButton({ id }: {id: string}) {
     }
 
     return (
-        <Button variant="contained" color="error" size="small" startIcon={<WifiOff />} onClick={handleDelete}>Offline</Button>
+        <Button variant="contained" color="error" size="small" startIcon={<WifiOff />} onClick={handleDelete}>End session</Button>
     );
 }
