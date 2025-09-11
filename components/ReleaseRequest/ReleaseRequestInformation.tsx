@@ -92,7 +92,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             <Typography variant="h6">RELEASE</Typography>
             {releaseRequests?.map((releaseRequest) => (
                 <Typography key={releaseRequest.id}
-                            color={getColor(releaseRequest.status)}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime && releaseRequest.lowerDate && releaseRequest.upperDate ? `RELEASED ${formatZuluDate(releaseRequest.lowerDate, true)} - ${formatZuluDate(releaseRequest.upperDate, true).substring(5)}` : '-/-'}
+                            color={getColor(releaseRequest.status)} sx={{ backgroundColor: releaseRequest.status === "ACTIVE" ? 'limegreen' : 'inherit'}}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime && releaseRequest.lowerDate && releaseRequest.upperDate ? `RELEASED ${formatZuluDate(releaseRequest.lowerDate, true)} - ${formatZuluDate(releaseRequest.upperDate, true).substring(5)}` : '-/-'}
                 </Typography>
             ))}
         </Grid2>
@@ -106,7 +106,7 @@ const getColor = (status: string) => {
         case 'SOON':
             return 'darkgreen';
         case 'ACTIVE':
-            return 'limegreen';
+            return 'white';
         case 'EXPIRED':
             return 'red';
     }
