@@ -55,6 +55,8 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         });
 
         socket.on('refresh-release', (rr) => {
+            if (rr.startedBy.cid !== cid && rr.initFacility !== facility) return;
+
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
 
             toast.info(`Release time for ${rr.callsign} updated to ${formatZuluDate(rr.releaseTime, true)}.`, { autoClose: false, closeOnClick: true, theme: "colored", });
