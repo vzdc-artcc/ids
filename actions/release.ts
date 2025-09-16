@@ -126,6 +126,9 @@ export const setReleaseTime = async (id: string, time: Date) => {
         data: {
             releaseTime: time,
         },
+        include: {
+            startedBy: true,
+        },
     });
 
     revalidatePath('/app/tmu');
