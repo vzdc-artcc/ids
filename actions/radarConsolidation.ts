@@ -73,6 +73,13 @@ export const createConsolidation = async (userId: string, primarySectorId: strin
             select: {
                 id: true,
             },
+            where: {
+                radar: {
+                    facility: {
+                        hiddenFromPicker: false,
+                    },
+                },
+            },
         });
         otherSectors = allSectors.map(sector => sector.id).filter(sectorId => {
             return !existingConsolidations.some(consolidation => consolidation.primarySectorId === sectorId || consolidation.secondarySectors.map(sector => sector.id).includes(sectorId));

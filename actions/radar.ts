@@ -6,6 +6,7 @@ import prisma from "@/lib/db";
 import {z} from "zod";
 import {log} from "@/actions/log";
 import {OrderItem} from "@/components/Admin/Order/OrderList";
+import {revalidatePath} from "next/cache";
 
 export const fetchAllRadars = async () => {
     return prisma.radar.findMany({
@@ -194,6 +195,8 @@ export const createOrUpdateRadar = async (formData: FormData) => {
     } else {
         await log("CREATE", "RADAR", `Created radar ${radar.facilityId}`);
     }
+
+    revalidatePath(`/admin/radars/${radar.id}`);
 
     return {radar};
 }
