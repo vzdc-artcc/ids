@@ -82,6 +82,7 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
         origin: z.string().min(3, "Origin must be 3 or 4 characters").max(4, "Origin must be 3 or 4 characters").toUpperCase(),
         destination: z.string().min(3, "Destination must be 3 or 4 characters").max(4, "Destination must be 3 or 4 characters").toUpperCase(),
         aircraftType: z.string().toUpperCase().optional(),
+        readyInMinutes: z.number().min(0).max(120),
         freeText: z.string().toUpperCase().optional(),
     });
 
@@ -90,6 +91,7 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
         origin: formData.get('origin'),
         destination: formData.get('destination'),
         aircraftType: formData.get('aircraftType'),
+        readyInMinutes: Number(formData.get('readyInMinutes')),
         freeText: formData.get('freeText'),
     });
 
@@ -111,6 +113,7 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
             aircraftType: result.data?.aircraftType,
             freeText: result.data?.freeText,
             initFacility: facility.toUpperCase(),
+            readyInMinutes: result.data.readyInMinutes,
             startedById: session.user.id,
         },
     });
@@ -118,13 +121,14 @@ export const createReleaseRequest = async (facility: string, formData: FormData)
     return { request };
 }
 
-export const setReleaseTime = async (id: string, time: Date) => {
+export const setReleaseTime = async (id: string, time?: Date) => {
     const r = await prisma.releaseRequest.update({
         where: {
             id,
         },
         data: {
-            releaseTime: time,
+            releaseTime: time || null,
+            released: true,
         },
         include: {
             startedBy: true,

@@ -2,10 +2,11 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {ReleaseRequestWithAll} from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import {socket} from "@/lib/socket";
-import {fetchReleaseRequestsFiltered} from "@/actions/release";
-import {Grid2, Typography} from "@mui/material";
+import {deleteReleaseRequest, fetchReleaseRequestsFiltered} from "@/actions/release";
+import {Grid2, IconButton, Tooltip, Typography} from "@mui/material";
 import {formatZuluDate} from "@/lib/date";
 import {toast} from "react-toastify";
+import {CheckCircleOutlined} from "@mui/icons-material";
 
 type ReleaseRequestWithStatus = ReleaseRequestWithAll & {
     status: 'PENDING' | 'SOON' | 'ACTIVE' | 'EXPIRED';
@@ -19,7 +20,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
 
     const setReleaseRequestsWithStatus = useCallback((releaseRequests: ReleaseRequestWithAll[]) => {
         setReleaseRequestsStates(releaseRequests.filter((rr) => {
-            return !rr.releaseTime || new Date(rr.releaseTime.getTime() + 1000*60*10) > new Date();
+            return !rr.releaseTime || (rr.released && new Date(rr.releaseTime.getTime() + 1000*60*10) > new Date());
         }).map((rr) => {
 
             const lowerDate = rr.releaseTime && new Date(rr.releaseTime.getTime() - 1000*60);
@@ -28,7 +29,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             let status = 'PENDING';
             const now = new Date();
 
-            if (rr.releaseTime && lowerDate && upperDate) {
+            if (rr.released && rr.releaseTime && lowerDate && upperDate) {
                 if (now.getTime() < lowerDate.getTime()) {
                     status = 'SOON'
                 } else if (lowerDate.getTime() <= now.getTime() && now.getTime() <= upperDate.getTime()) {
@@ -36,6 +37,8 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
                 } else {
                     status = 'EXPIRED';
                 }
+            } else if (rr.released) {
+                status = 'ACTIVE';
             }
 
             return {
@@ -59,7 +62,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
 
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
 
-            toast.info(`Release time for ${rr.callsign} updated to ${formatZuluDate(rr.releaseTime as Date, true)}.`, { autoClose: false, closeOnClick: true, theme: "colored", });
+            toast.info(`Release time for ${rr.callsign} updated to ${rr.releaseTime ? formatZuluDate(rr.releaseTime as Date, true) : 'ANY'}.`, { autoClose: 60 * 1000, closeOnClick: true, theme: "colored", });
             playNewReleaseTime().then();
         });
 
@@ -87,12 +90,53 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         await audio.play();
     }
 
+    const deleteAnyTimeReleaseRequest = async (id: string) => {
+        const rr = await deleteReleaseRequest(id);
+
+        if (!rr) return;
+
+        socket.emit('delete-release-request', rr.id);
+    }
+
     return (
         <Grid2 size={5} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">RELEASE</Typography>
-            {releaseRequests?.map((releaseRequest) => (
+            {releaseRequests?.sort((a, b) => {
+                const statusOrder = {
+                    'ACTIVE': 1,
+                    'EXPIRED': 2,
+                    'PENDING': 4,
+                    'SOON': 3,
+                };
+                if (a.status === b.status) {
+                    if (a.status === 'ACTIVE' && a.lowerDate && b.lowerDate) {
+                        if (!a.upperDate) return 1;
+                        if (!b.upperDate) return -1;
+                        return a.lowerDate.getTime() - b.lowerDate.getTime();
+                    }
+                    if (a.status === 'EXPIRED' && a.upperDate && b.upperDate) {
+                        return a.upperDate.getTime() - b.upperDate.getTime();
+                    }
+                    if ((a.status === 'PENDING' || a.status === 'SOON') && a.releaseTime && b.releaseTime) {
+                        return a.releaseTime.getTime() - b.releaseTime.getTime();
+                    }
+                    return 0;
+                }
+                return statusOrder[a.status] - statusOrder[b.status];
+            })
+                .map((releaseRequest) => (
                 <Typography key={releaseRequest.id}
-                            color={getColor(releaseRequest.status)} sx={{ backgroundColor: releaseRequest.status === "ACTIVE" ? 'limegreen' : 'inherit'}}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime && releaseRequest.lowerDate && releaseRequest.upperDate ? `RELEASED ${formatZuluDate(releaseRequest.lowerDate, true)} - ${formatZuluDate(releaseRequest.upperDate, true).substring(5)}` : '-/-'}
+                            color={getColor(releaseRequest.status)} sx={{ backgroundColor: releaseRequest.status === "ACTIVE" ? 'limegreen' : 'inherit'}}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime && releaseRequest.lowerDate && releaseRequest.upperDate ? `R ${formatZuluDate(releaseRequest.lowerDate, true)} - ${formatZuluDate(releaseRequest.upperDate, true).substring(5)}` :
+                    (releaseRequest.released ? (
+                        <>
+                            R ANY
+                            <Tooltip title="Mark aircraft as departed/left and delete release request">
+                                <IconButton size="small" sx={{ p: 0, m: 0, ml: 1, }} onClick={() => deleteAnyTimeReleaseRequest(releaseRequest.id)}>
+                                    <CheckCircleOutlined fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                        </>
+                    ) : '-/-')}
                 </Typography>
             ))}
         </Grid2>
@@ -102,9 +146,9 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
 const getColor = (status: string) => {
     switch (status) {
         case 'PENDING':
-            return 'gold';
+            return 'silver';
         case 'SOON':
-            return 'darkgreen';
+            return 'gold';
         case 'ACTIVE':
             return 'white';
         case 'EXPIRED':

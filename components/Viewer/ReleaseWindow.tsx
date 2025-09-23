@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Form from "next/form";
-import {Box, Button, Grid2, TextField, Typography} from "@mui/material";
+import {Box, Button, FormControl, Grid2, InputLabel, MenuItem, Select, TextField, Typography} from "@mui/material";
 import {createReleaseRequest} from "@/actions/release";
 import {toast} from "react-toastify";
 import {socket} from "@/lib/socket";
@@ -39,6 +39,28 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
                     <Grid2 size={2}>
                         <TextField
                             variant="filled"
+                            label="TO"
+                            placeholder="Destination"
+                            name="destination"
+                            required
+                            fullWidth
+                        />
+                    </Grid2>
+                    <Grid2 size={2}>
+                        <TextField
+                            variant="filled"
+                            label="Ready Time (mins)"
+                            type="number"
+                            helperText="Estimate how many aircraft until the aircraft will be ready for DEPARTURE/TAKEOFF (in minutes) from now. 0 is an acceptable value."
+                            name="readyInMinutes"
+                            fullWidth
+                            required
+                        />
+                    </Grid2>
+
+                    <Grid2 size={2}>
+                        <TextField
+                            variant="filled"
                             label="FROM"
                             placeholder="Origin"
                             name="origin"
@@ -49,30 +71,28 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
                         />
                     </Grid2>
                     <Grid2 size={2}>
-                        <TextField
-                            variant="filled"
-                            label="TO"
-                            placeholder="Destination"
-                            name="destination"
-                            required
-                            fullWidth
-                        />
+                        <FormControl variant="filled" fullWidth>
+                            <InputLabel id="aircraft-type-label">A/C Type</InputLabel>
+                            <Select
+                                labelId="aircraft-type-label"
+                                name="aircraftType"
+                                defaultValue="JET"
+                            >
+                                <MenuItem value="JET">JET</MenuItem>
+                                <MenuItem value="PROP">PROPELLER</MenuItem>
+                                <MenuItem value="HEAVY">HEAVY</MenuItem>
+                                <MenuItem value="SUPER">SUPER</MenuItem>
+                                <MenuItem value="HELI">HELICOPTER</MenuItem>
+                                <MenuItem value="FPL">OTHER</MenuItem>
+                                {/* Add more options as needed */}
+                            </Select>
+                        </FormControl>
                     </Grid2>
-
-                    <Grid2 size={3}>
-                        <TextField
-                            variant="filled"
-                            label="A/C Type (optional)"
-                            name="aircraftType"
-                            helperText="Only include the aircraft type if it plays a significant role in determining the release time. Examples include substantial differences in speed, engine type, altitiude, route, equipment, and other restrictions."
-                            fullWidth
-                        />
-                    </Grid2>
-                    <Grid2 size={3}>
+                    <Grid2 size={2}>
                         <TextField
                             variant="filled"
                             label="Free Text (optional)"
-                            helperText="If the aircraft is not parked at the gate, please indicate the status here.  Be consice."
+                            helperText="Use only if there will be an impact to release time."
                             name="freeText"
                             fullWidth
                         />

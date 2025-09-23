@@ -55,6 +55,12 @@ export default function ReleaseRequestViewer() {
             });
         });
 
+        socket.on('delete-release-request', (requestId?: string) => {
+            if (!requestId) return;
+
+            setReleaseRequests((prev) => prev?.filter((r) => r.id !== requestId));
+        });
+
         const intervalId = setInterval(() => {
             if (!releaseRequests) return;
             setReleaseRequests(filterExpiredReleases(releaseRequests));
@@ -63,13 +69,14 @@ export default function ReleaseRequestViewer() {
         return () => {
             clearInterval(intervalId);
 
+            socket.off('delete-release-request');
             socket.off('new-release-request');
         }
     }, [releaseRequests, refreshReleaseRequests, filterExpiredReleases]);
 
     const deleteAll = async (past: boolean) => {
         deleteReleaseRequests(past).then(() => {
-            socket.emit('delete-release-request');
+            socket.emit('delete-release-request', );
 
             refreshReleaseRequests().then();
         });
@@ -79,8 +86,10 @@ export default function ReleaseRequestViewer() {
         <>
             <Button variant="outlined" color="error" size="small" startIcon={<Delete />} sx={{ mb: 2, mr: 2, }} onClick={() => deleteAll(false)}>Delete All</Button>
             <Button variant="contained" color="warning" size="small" startIcon={<Delete />} sx={{ mb: 2, }} onClick={() => deleteAll(true)}>Delete Past Released -20M</Button>
-            {releaseRequests?.map((releaseRequest) => (
-                <Grid2 container columns={13} key={releaseRequest.id} spacing={3} alignItems="center" sx={{ borderTop: 1, minHeight: 50, mx: 2, }}>
+            {releaseRequests?.sort((a, b) => {
+                return a.initTime.getTime() - b.initTime.getTime();
+            }).map((releaseRequest) => (
+                <Grid2 container columns={16} key={releaseRequest.id} spacing={3} alignItems="center" sx={{ borderTop: 1, minHeight: 50, mx: 2, }}>
                     <Grid2 size={1}>
                         <Typography fontWeight="bold" color="cyan">{releaseRequest.origin}</Typography>
                     </Grid2>
@@ -93,10 +102,11 @@ export default function ReleaseRequestViewer() {
                     <Grid2 size={1}>
                         <Typography>{formatZuluDate(releaseRequest.initTime, true)}</Typography>
                     </Grid2>
-                    <Grid2 size={1}>
+                    <Grid2 size={2}>
                         { releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">{formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
+                        { releaseRequest.released && !releaseRequest.releaseTime && <Typography color="limegreen"><b>ANY</b> / ATC DEL</Typography> }
                     </Grid2>
-                    <Grid2 size={1}>
+                    <Grid2 size={2}>
                         <Typography color="red">{releaseRequest.aircraftType}</Typography>
                     </Grid2>
                     <Grid2 size={3}>
@@ -104,7 +114,7 @@ export default function ReleaseRequestViewer() {
                             <Typography color="red">{releaseRequest.freeText}</Typography>
                         </Box>
                     </Grid2>
-                    <Grid2 size={4}>
+                    <Grid2 size={5}>
                         <ReleaseRequestButtons releaseRequest={releaseRequest} onUpdate={refreshReleaseRequests} />
                     </Grid2>
                 </Grid2>
