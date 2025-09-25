@@ -1,12 +1,15 @@
 'use client';
-import React from 'react';
+import React, {useState} from 'react';
 import Form from "next/form";
 import {Box, Button, FormControl, Grid2, InputLabel, MenuItem, Select, TextField, Typography} from "@mui/material";
 import {createReleaseRequest} from "@/actions/release";
 import {toast} from "react-toastify";
 import {socket} from "@/lib/socket";
 
-export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
+export default function ReleaseWindow({ facilityId, onSubmit }: { facilityId: string, onSubmit?: () => void }) {
+
+    const [initState, setInitState] = useState('PSH');
+    const [aircraftType, setAircraftType] = useState('J');
 
     const handleSubmit = async (formData: FormData) => {
         const { request, errors }  = await createReleaseRequest(facilityId || formData.get('origin') as string, formData);
@@ -18,6 +21,9 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
 
         socket.emit('new-release-request', request.id);
         toast.success(`${request.callsign} FROM ${request.origin} -> ${request.destination}`);
+        onSubmit?.();
+        setInitState('-');
+        setAircraftType('-');
     }
 
     return (
@@ -49,18 +55,6 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
                     <Grid2 size={2}>
                         <TextField
                             variant="filled"
-                            label="Ready Time (mins)"
-                            type="number"
-                            helperText="Estimate how many aircraft until the aircraft will be ready for DEPARTURE/TAKEOFF (in minutes) from now. 0 is an acceptable value."
-                            name="readyInMinutes"
-                            fullWidth
-                            required
-                        />
-                    </Grid2>
-
-                    <Grid2 size={2}>
-                        <TextField
-                            variant="filled"
                             label="FROM"
                             placeholder="Origin"
                             name="origin"
@@ -70,21 +64,40 @@ export default function ReleaseWindow({ facilityId }: { facilityId: string }) {
                             helperText={!facilityId ? "TMU IDS ONLY: Include the facility ID of the origin (ZDC, PCT, KDCA, etc.) to have it pair to the appropriate facility." : '' }
                         />
                     </Grid2>
+
+                    <Grid2 size={2}>
+                        <FormControl variant="filled" fullWidth>
+                            <InputLabel id="status-label">Status</InputLabel>
+                            <Select
+                                labelId="status-label"
+                                name="initState"
+                                value={initState}
+                                onChange={e => setInitState(e.target.value)}
+                                required
+                            >
+                                <MenuItem value="RMP">RAMP</MenuItem>
+                                <MenuItem value="PSH">PUSH</MenuItem>
+                                <MenuItem value="TXI">TAXI</MenuItem>
+                                <MenuItem value="RDY">READY</MenuItem>
+                                <MenuItem value="HLD">HOLD</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid2>
                     <Grid2 size={2}>
                         <FormControl variant="filled" fullWidth>
                             <InputLabel id="aircraft-type-label">A/C Type</InputLabel>
                             <Select
                                 labelId="aircraft-type-label"
                                 name="aircraftType"
-                                defaultValue="JET"
+                                value={aircraftType}
+                                onChange={e => setAircraftType(e.target.value)}
+                                required
                             >
-                                <MenuItem value="JET">JET</MenuItem>
-                                <MenuItem value="PROP">PROPELLER</MenuItem>
-                                <MenuItem value="HEAVY">HEAVY</MenuItem>
-                                <MenuItem value="SUPER">SUPER</MenuItem>
-                                <MenuItem value="HELI">HELICOPTER</MenuItem>
+                                <MenuItem value="J">JET</MenuItem>
+                                <MenuItem value="P">PROPELLER</MenuItem>
+                                <MenuItem value="H">HEAVY</MenuItem>
+                                <MenuItem value="S">SUPER</MenuItem>
                                 <MenuItem value="FPL">OTHER</MenuItem>
-                                {/* Add more options as needed */}
                             </Select>
                         </FormControl>
                     </Grid2>

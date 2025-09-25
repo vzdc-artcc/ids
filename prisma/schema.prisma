@@ -243,14 +243,15 @@ model ReleaseRequest {
   startedById  String
   initTime     DateTime @default(now())
   initFacility String
+  initState    String
 
-  callsign       String
-  origin         String
-  destination    String
-  readyInMinutes Int
-  aircraftType   String?
-  freeText       String?
+  callsign     String
+  origin       String
+  destination  String
+  aircraftType String?
+  freeText     String?
 
   releaseTime DateTime?
   released    Boolean   @default(false)
+  condition   String?
 }

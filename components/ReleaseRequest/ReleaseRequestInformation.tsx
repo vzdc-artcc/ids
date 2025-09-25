@@ -6,7 +6,8 @@ import {deleteReleaseRequest, fetchReleaseRequestsFiltered} from "@/actions/rele
 import {Grid2, IconButton, Tooltip, Typography} from "@mui/material";
 import {formatZuluDate} from "@/lib/date";
 import {toast} from "react-toastify";
-import {CheckCircleOutlined} from "@mui/icons-material";
+import {RemoveCircleOutline} from "@mui/icons-material";
+import {shouldKeepReleaseRequest} from "@/lib/releaseRequest";
 
 type ReleaseRequestWithStatus = ReleaseRequestWithAll & {
     status: 'PENDING' | 'SOON' | 'ACTIVE' | 'EXPIRED';
@@ -19,9 +20,9 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
     const [releaseRequests, setReleaseRequestsStates] = useState<ReleaseRequestWithStatus[]>();
 
     const setReleaseRequestsWithStatus = useCallback((releaseRequests: ReleaseRequestWithAll[]) => {
-        setReleaseRequestsStates(releaseRequests.filter((rr) => {
-            return !rr.releaseTime || (rr.released && new Date(rr.releaseTime.getTime() + 1000*60*10) > new Date());
-        }).map((rr) => {
+        setReleaseRequestsStates(releaseRequests.filter(shouldKeepReleaseRequest).map((rr) => {
+
+
 
             const lowerDate = rr.releaseTime && new Date(rr.releaseTime.getTime() - 1000*60);
             const upperDate = rr.releaseTime && new Date(rr.releaseTime.getTime() + 1000*60*2);
@@ -30,9 +31,13 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             const now = new Date();
 
             if (rr.released && rr.releaseTime && lowerDate && upperDate) {
-                if (now.getTime() < lowerDate.getTime()) {
+                if ((rr.condition === 'window' && now.getTime() < lowerDate.getTime())
+                    || (rr.condition === 'after' && now.getTime() < rr.releaseTime.getTime())) {
                     status = 'SOON'
-                } else if (lowerDate.getTime() <= now.getTime() && now.getTime() <= upperDate.getTime()) {
+                } else if (
+                (rr.condition === 'window' && lowerDate.getTime() <= now.getTime() && now.getTime() <= upperDate.getTime())
+                || (rr.condition === 'after' && now.getTime() >= rr.releaseTime.getTime())
+                || (rr.condition === 'before' && now.getTime() <= rr.releaseTime.getTime())) {
                     status = 'ACTIVE'
                 } else {
                     status = 'EXPIRED';
@@ -90,7 +95,7 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
         await audio.play();
     }
 
-    const deleteAnyTimeReleaseRequest = async (id: string) => {
+    const clickDeleteReleaseRequest = async (id: string) => {
         const rr = await deleteReleaseRequest(id);
 
         if (!rr) return;
@@ -126,17 +131,13 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
             })
                 .map((releaseRequest) => (
                 <Typography key={releaseRequest.id}
-                            color={getColor(releaseRequest.status)} sx={{ backgroundColor: releaseRequest.status === "ACTIVE" ? 'limegreen' : 'inherit'}}><b>{releaseRequest.callsign}</b> | {releaseRequest.releaseTime && releaseRequest.lowerDate && releaseRequest.upperDate ? `R ${formatZuluDate(releaseRequest.lowerDate, true)} - ${formatZuluDate(releaseRequest.upperDate, true).substring(5)}` :
-                    (releaseRequest.released ? (
-                        <>
-                            R ANY
-                            <Tooltip title="Mark aircraft as departed/left and delete release request">
-                                <IconButton size="small" sx={{ p: 0, m: 0, ml: 1, }} onClick={() => deleteAnyTimeReleaseRequest(releaseRequest.id)}>
-                                    <CheckCircleOutlined fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        </>
-                    ) : '-/-')}
+                            color={getColor(releaseRequest.status)} sx={{ backgroundColor: releaseRequest.status === "ACTIVE" ? 'limegreen' : 'inherit'}}>
+                    <Tooltip title="Delete release request">
+                        <IconButton size="small" sx={{ p: 0, m: 0, mx: 1, }} onClick={() => clickDeleteReleaseRequest(releaseRequest.id)}>
+                            <RemoveCircleOutline fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <b>{releaseRequest.callsign}</b> | {getReleaseTimeText(releaseRequest)}
                 </Typography>
             ))}
         </Grid2>
@@ -153,5 +154,35 @@ const getColor = (status: string) => {
             return 'white';
         case 'EXPIRED':
             return 'red';
+    }
+}
+
+const getReleaseTimeText = (rr: ReleaseRequestWithStatus): string => {
+    if (!rr.released) {
+        return '-/-';
+    }
+
+    console.log(rr.condition);
+
+    switch (rr.condition) {
+        case 'window':
+            if (!rr.releaseTime) {
+                return 'ANY';
+            } else if (rr.releaseTime && rr.lowerDate && rr.upperDate) {
+                return `${formatZuluDate(rr.lowerDate, true)} - ${formatZuluDate(rr.upperDate, true).substring(2)}`;
+            }
+            return 'ERR';
+        case 'before':
+            if (rr.releaseTime) {
+                return `AIRBORNE BEFORE ${formatZuluDate(rr.releaseTime, true)}`;
+            }
+            return 'ERR';
+        case 'after':
+            if (rr.releaseTime) {
+                return `AIRBORNE AFTER ${formatZuluDate(rr.releaseTime, true)}`;
+            }
+            return 'ERR';
+        default:
+            return 'ERR';
     }
 }

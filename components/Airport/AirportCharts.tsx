@@ -7,42 +7,35 @@ import {toast} from "react-toastify";
 
 export default function AirportCharts({icao}: { icao: string, }) {
 
-    const [charts, setCharts] = React.useState<{ name: string, code: string, url: string, }[]>();
+    const [charts, setCharts] = React.useState<Record<string, { name: string, url: string,}[]>>();
     const router = useRouter();
     const pathName = usePathname();
 
     useEffect(() => {
         fetchCharts(icao).then((data) => {
 
-            if (!data[icao]) {
-                setCharts([]);
-                toast.error('No charts found for this ICAO.');
+            if (!data || data.length === 0) {
+                setCharts({});
+                toast.info('No charts found for this airport.');
                 return;
             }
 
-            const sortedCharts = (data[icao] as {
+            type ChartData = {
                 chart_name: string,
-                chart_code: string,
-                pdf_path: string,
-            }[]).map((chart) => ({
-                name: chart.chart_name,
-                code: chart.chart_code,
-                url: chart.pdf_path,
-            })).sort((a, b) => {
-                const order = ['APD', 'DP', 'STAR', 'IAP', 'MIN'];
-                return order.indexOf(a.code) - order.indexOf(b.code);
+                pdf_url: string,
+            };
+
+            const { airport_diagram, general, departure, arrival, approach } = data.charts
+
+            setCharts({
+                'APD': airport_diagram ? airport_diagram.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
+                'GEN': general ? general.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
+                'DP': departure ? departure.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
+                'STAR': arrival ? arrival.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
+                'IAP': approach ? approach.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
             });
-            setCharts(sortedCharts);
         });
     }, [icao]);
-
-    const chartsGroupedByCode = charts?.reduce((acc, chart) => {
-        if (!acc[chart.code]) {
-            acc[chart.code] = [];
-        }
-        acc[chart.code].push(chart);
-        return acc;
-    }, {} as Record<string, { name: string, code: string, url: string }[]>);
 
     const navigateToChart = (url: string) => {
         const search = new URLSearchParams({
@@ -57,7 +50,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
     return (
         <Box height={250} sx={{overflow: 'auto'}}>
             {!charts && <CircularProgress/>}
-            {Object.entries(chartsGroupedByCode || {}).map(([code, charts]) => (
+            {Object.entries(charts || {}).map(([code, charts]) => (
                 <ButtonGroup
                     key={icao + 'charts' + code}
                     variant="outlined"
@@ -96,7 +89,7 @@ export const getChartColor = (chartCode: string) => {
             return 'success';
         case 'IAP':
             return 'warning';
-        case 'MIN':
+        case 'GEN':
             return 'secondary';
         default:
             return 'inherit';
