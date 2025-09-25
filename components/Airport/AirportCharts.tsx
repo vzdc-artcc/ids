@@ -14,7 +14,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
     useEffect(() => {
         fetchCharts(icao).then((data) => {
 
-            if (!data || data.length === 0) {
+            if (!data || !data.airport_data) {
                 setCharts({});
                 toast.info('No charts found for this airport.');
                 return;
