@@ -140,6 +140,25 @@ export const setReleaseTime = async (id: string, mode: 'window' | 'before' | 'af
     return r;
 }
 
+export const removeReleaseTime = async (id: string) => {
+    const r = await prisma.releaseRequest.update({
+        where: {
+            id,
+        },
+        data: {
+            releaseTime: null,
+            released: false,
+            condition: null,
+        },
+        include: {
+            startedBy: true,
+        },
+    });
+
+    revalidatePath('/app/tmu');
+    return r;
+}
+
 export const deleteReleaseRequests = async (onlyPast: boolean) => {
     if (onlyPast) {
         await prisma.releaseRequest.deleteMany({

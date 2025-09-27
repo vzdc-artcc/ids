@@ -16,6 +16,8 @@ import {getServerSession} from "next-auth";
 import {authOptions} from "@/auth/auth";
 import ReleaseRequestInformation from "@/components/ReleaseRequest/ReleaseRequestInformation";
 
+const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
+
 export async function generateMetadata(
     {params}: { params: Promise<{ id: string }> },
 ): Promise<Metadata> {
@@ -60,13 +62,15 @@ export default async function Page({params}: { params: Promise<{ id: string }> }
     return session?.user && (
         <Grid2 container columns={12}>
             <MessageListener facility={id} cid={session.user.cid} />
-            <AirportAtisGridItems icao={airport.icao} atisIntegrationDisabled={airport.disableAutoAtis}/>
+            <AirportAtisGridItems icao={airport.icao} atisIntegrationDisabled={airport.disableAutoAtis}
+                                  disableOnlineInformation={TRAINING_MODE}/>
             <AirportFlowGridItem airport={airport} runways={airport.runways}/>
-            <AirportLocalInformation airport={airport}/>
+            <AirportLocalInformation airport={airport} disableOnlineInformation={TRAINING_MODE}/>
             <ReleaseRequestInformation facility={id} cid={session.user.cid} />
             {/*<NotamInformation facility={airport.facility} initialNotams={airport.notams}/>*/}
             <TmuGridItem facility={airport.facility}/>
-            <AirportRadarInformation icao={airport.icao} radars={airport.radars}/>
+            <AirportRadarInformation icao={airport.icao} radars={airport.radars}
+                                     disableOnlineInformation={TRAINING_MODE}/>
             <Grid2 size={6} sx={{border: 1,}}>
                 <Typography variant="h6">CHARTS</Typography>
                 <AirportCharts icao={airport.icao}/>

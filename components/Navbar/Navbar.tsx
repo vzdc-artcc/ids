@@ -10,6 +10,7 @@ import {Consolidation} from "@/components/Viewer/Consolidation";
 import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
 
 const {IS_STAFF_ENDPOINT, DEV_MODE} = process.env;
+const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
 
 export default async function Navbar({session, activeConsol }: { session: Session | null, activeConsol?: Consolidation }) {
 
@@ -29,11 +30,14 @@ export default async function Navbar({session, activeConsol }: { session: Sessio
                     {DEV_MODE !== 'true' &&
                         <Typography variant="subtitle2">IDS & ERIDS v{publicRuntimeConfig?.version}</Typography>}
                 </Box>
-                <Box sx={{mx: 4, p: 0.5, border: 1, borderColor: 'gold',}}>
+                <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'gold',}}>
                     <Typography variant="subtitle1" color={activeConsol ? 'gold' : 'red'}
                                 fontWeight="bold">{activeConsol ? `${activeConsol.primarySector.radar.facilityId} - ${activeConsol.primarySector.identifier}` : 'NO CONSOL'}</Typography>
                     <Typography variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}</Typography>
                 </Box>
+                {TRAINING_MODE && <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'hotpink',}}>
+                    <Typography variant="subtitle1" color="hotpink">TRAINING USE ONLY</Typography>
+                </Box>}
                 { activeConsol && <NavConsolidationDeleteButton id={activeConsol.id} /> }
                 <span style={{flexGrow: 1,}}></span>
                 {session && isStaff && <Link href="/admin" style={{color: 'inherit',}}>

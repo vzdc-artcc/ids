@@ -7,11 +7,12 @@ import {socket} from "@/lib/socket";
 import {getMetarColor} from "@/lib/metar";
 import {toast} from "react-toastify";
 
-export default function AirportAtisGridItems({icao, small, free, atisIntegrationDisabled}: {
+export default function AirportAtisGridItems({icao, small, free, atisIntegrationDisabled, disableOnlineInformation}: {
     icao: string,
     small?: boolean,
     free?: boolean,
     atisIntegrationDisabled?: boolean,
+    disableOnlineInformation?: boolean,
 }) {
 
     const [airportIcao, setairportIcao] = useState<string>(icao);
@@ -25,7 +26,6 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
     useEffect(() => {
         if (!free) {
             socket.on(`${airportIcao}-atis`, (data: AtisUpdate) => {
-                console.log(data);
                 switch (data.atisType) {
                     case 'combined':
                         setCombinedAtis(data);
@@ -38,43 +38,45 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                         break;
                 }
             });
-            socket.on('vatsim-data', (data) => {
-            fetchMetar(airportIcao).then(setMetar);
-            const atis = (data.atis as {
-                atis_code: string,
-                callsign: string,
-                frequency: string,
-                text_atis: string[],
-            }[])
-                .filter((atis) => airportIcao.length === 4 ? atis.callsign.startsWith(airportIcao) : false);
-            
-            if (atis.length === 0) {
-                setCombinedAtis(undefined);
-                setDepartureAtis(undefined);
-                setArrivalAtis(undefined);
-                return;
+            if (!disableOnlineInformation) {
+                socket.on('vatsim-data', (data) => {
+                    fetchMetar(airportIcao).then(setMetar);
+                    const atis = (data.atis as {
+                        atis_code: string,
+                        callsign: string,
+                        frequency: string,
+                        text_atis: string[],
+                    }[])
+                        .filter((atis) => airportIcao.length === 4 ? atis.callsign.startsWith(airportIcao) : false);
+
+                    if (atis.length === 0) {
+                        setCombinedAtis(undefined);
+                        setDepartureAtis(undefined);
+                        setArrivalAtis(undefined);
+                        return;
+                    }
+
+                    atis.forEach((atis) => {
+                        const atisLetter = atis.atis_code || ((atis.text_atis as string[]) || [''])[0]?.match(/ATIS INFO ([A-Z])/i)?.[1] || '-';
+
+                        const atisUpdate = {
+                            atisLetter,
+                            airportConditions: atis.text_atis?.join(' ') || 'N/A',
+                            notams: 'N/A',
+                        } as AtisUpdate;
+
+                        // more than 5 minutes old
+                        const tenMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+                        if (atis.callsign.includes('_D_')) {
+                            setDepartureAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
+                        } else if (atis.callsign.includes('_A_')) {
+                            setArrivalAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
+                        } else {
+                            setCombinedAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
+                        }
+                    });
+                });
             }
-
-            atis.forEach((atis) => {
-                const atisLetter = atis.atis_code || ((atis.text_atis as string[]) || [''])[0]?.match(/ATIS INFO ([A-Z])/i)?.[1] || '-';
-
-                const atisUpdate = {
-                    atisLetter,
-                    airportConditions: atis.text_atis?.join(' ') || 'N/A',
-                    notams: 'N/A',
-                } as AtisUpdate;
-
-                // more than 5 minutes old
-                const tenMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-                if (atis.callsign.includes('_D_')) {
-                    setDepartureAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                } else if (atis.callsign.includes('_A_')) {
-                    setArrivalAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                } else {
-                    setCombinedAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                }
-                }); 
-            });
 
             socket.on(`${airportIcao}-vatis-integration`, (enabled: boolean) => {
                 setAtisDisabled(!enabled);
@@ -83,10 +85,12 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         }
         return () => {
             socket.off(`${airportIcao}-vatis-integration`)
-            socket.off('vatsim-data');
+            if (!disableOnlineInformation) {
+                socket.off('vatsim-data');
+            }
             socket.off(`${airportIcao}-atis`);
         };
-    }, [airportIcao, free]);
+    }, [airportIcao, free, disableOnlineInformation]);
 
     const {wind, altimeter} = getWindAndAltimeter(metar || '');
 
@@ -111,12 +115,12 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                         </Tooltip>}
                 </Grid2>
                 <Grid2 size={1} sx={{border: 1,}}>
-                    {!free && !metar &&
+                    {!free && !metar && !disableOnlineInformation &&
                         <Stack direction="column" justifyContent="center" alignItems="center">
                             <CircularProgress size={25}/>
                         </Stack>
                     }
-                    {!free && metar && <Tooltip title={metar} arrow>
+                    {!free && (metar || disableOnlineInformation) && <Tooltip title={metar} arrow>
                         <Box>
                             {!combinedAtis && !departureAtis && !arrivalAtis &&
                                 <Typography variant="h5" textAlign="center" color={getMetarColor(metar || '')}
@@ -154,7 +158,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                 <Typography variant="h3" textAlign="center">{airportIcao.toUpperCase()}</Typography>
                 {atisDisabled &&
                     <Typography textAlign="center" color="orange" fontWeight="bold">AUTO FLOW DISABLED</Typography>}
-                {!metar &&
+                {(!metar && !disableOnlineInformation) &&
                     <Stack direction="column" alignItems="center">
                         <CircularProgress size={80}/>
                         <Typography variant="subtitle2" textAlign="center">Loading may take up to 15

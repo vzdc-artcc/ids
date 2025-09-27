@@ -1,5 +1,5 @@
 'use client'
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ReleaseRequestWithAll} from "@/components/ReleaseRequest/ReleaseRequestViewer";
 import {socket} from "@/lib/socket";
 import {deleteReleaseRequest, fetchReleaseRequestsFiltered} from "@/actions/release";
@@ -67,7 +67,11 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
 
             fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
 
-            toast.info(`Release time for ${rr.callsign} updated to ${rr.releaseTime ? formatZuluDate(rr.releaseTime as Date, true) : 'ANY'}.`, { autoClose: 60 * 1000, closeOnClick: true, theme: "colored", });
+            toast.info(`Release time for ${rr.callsign} updated to ${rr.released ? (rr.releaseTime ? formatZuluDate(rr.releaseTime as Date, true) : 'ANY') : 'NONE'}.`, {
+                autoClose: 60 * 1000,
+                closeOnClick: true,
+                theme: "colored",
+            });
             playNewReleaseTime().then();
         });
 

@@ -1,7 +1,6 @@
 'use client';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ReleaseRequest, User} from "@prisma/client";
-import {useState} from "react";
 import {Box, Button, Dialog, DialogContent, DialogTitle, Grid2, Stack, Typography} from "@mui/material";
 import {formatZuluDate} from "@/lib/date";
 import {socket} from "@/lib/socket";
@@ -65,6 +64,10 @@ export default function ReleaseRequestViewer() {
             setReleaseRequests((prev) => prev?.filter((r) => r.id !== requestId));
         });
 
+        socket.on('refresh-release', () => {
+            refreshReleaseRequests().then();
+        });
+
         const intervalId = setInterval(() => {
             if (!releaseRequests) return;
             setReleaseRequests(filterExpiredReleases(releaseRequests));
@@ -73,6 +76,7 @@ export default function ReleaseRequestViewer() {
         return () => {
             clearInterval(intervalId);
 
+            socket.off('refresh-release');
             socket.off('delete-release-request');
             socket.off('new-release-request');
         }
@@ -148,7 +152,7 @@ export default function ReleaseRequestViewer() {
                                     </Box>
                                 </Grid2>
                                 <Grid2 size={6}>
-                                    <ReleaseRequestButtons releaseRequest={releaseRequest} onUpdate={refreshReleaseRequests} />
+                                    <ReleaseRequestButtons releaseRequest={releaseRequest}/>
                                 </Grid2>
                             </Grid2>
                         ))}

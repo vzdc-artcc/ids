@@ -7,7 +7,11 @@ import {getColor} from "@/lib/facilityColor";
 import {getAirportRelatedConsolidations, SectorStatus} from "@/actions/airport-split";
 import {toast} from "react-toastify";
 
-export default function AirportRadarInformation({icao, radars}: { icao: string, radars: Radar[], }) {
+export default function AirportRadarInformation({icao, radars, disableOnlineInformation}: {
+    icao: string,
+    radars: Radar[],
+    disableOnlineInformation?: boolean
+}) {
 
     const [onlineAtc, setOnlineAtc] = useState<{ position: string, frequency: string, facility: number, }[]>();
     const [radarConsolidations, setRadarConsolidations] = useState<SectorStatus[]>();
@@ -20,28 +24,31 @@ export default function AirportRadarInformation({icao, radars}: { icao: string, 
             toast.info('Radar consolidations updated');
         });
 
-        socket.on('vatsim-data', (data) => {
-            setOnlineAtc((data.controllers as {
-                callsign: string,
-                frequency: string,
-                facility: number,
-            }[])
-                .filter((c) => radars.some((r) => r.atcPrefixes.some((prefix) => c.callsign.startsWith(prefix))))
-                .filter((c) => c.facility > 4)
-                .sort((a, b) => a.callsign.localeCompare(b.callsign))
-                .sort((a, b) => a.facility - b.facility)
-                .map((controller) => ({
-                    position: controller.callsign,
-                    frequency: controller.frequency,
-                    facility: controller.facility,
-                })));
-        });
-
+        if (!disableOnlineInformation) {
+            socket.on('vatsim-data', (data) => {
+                setOnlineAtc((data.controllers as {
+                    callsign: string,
+                    frequency: string,
+                    facility: number,
+                }[])
+                    .filter((c) => radars.some((r) => r.atcPrefixes.some((prefix) => c.callsign.startsWith(prefix))))
+                    .filter((c) => c.facility > 4)
+                    .sort((a, b) => a.callsign.localeCompare(b.callsign))
+                    .sort((a, b) => a.facility - b.facility)
+                    .map((controller) => ({
+                        position: controller.callsign,
+                        frequency: controller.frequency,
+                        facility: controller.facility,
+                    })));
+            });
+        }
         return () => {
-            socket.off('vatsim-data');
+            if (!disableOnlineInformation) {
+                socket.off('vatsim-data');
+            }
             socket.off('radar-consolidation');
         };
-    }, [radars, icao]);
+    }, [radars, icao, disableOnlineInformation]);
 
     return (
         <>
@@ -53,6 +60,7 @@ export default function AirportRadarInformation({icao, radars}: { icao: string, 
                             <b>{atc.position}</b> {'--->'} {atc.frequency}
                         </Typography>
                     ))}
+                    {disableOnlineInformation && <Typography color="gray">DISABLED FOR TRAINING</Typography>}
                 </Box>
             </Grid2>
             <Grid2 size={2} sx={{border: 1,}}>

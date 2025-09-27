@@ -19,6 +19,8 @@ import ReleaseRequestInformation from "@/components/ReleaseRequest/ReleaseReques
 import RadarConsolidationDialog from "@/components/RadarConsolidation/RadarConsolidationDialog";
 import {Consolidation} from "@/components/Viewer/Consolidation";
 
+const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
+
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const params = await props.params;
     const {id} = params;
@@ -89,10 +91,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             <MessageListener facility={id} cid={session.user.cid} />
             <Grid2 size={8} height={250} sx={{border: 1, overflowY: 'auto', }}>
                 {radar.connectedAirports.map((airport) => (
-                    <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}/>
+                    <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}
+                                             disableOnlineInformation={TRAINING_MODE}/>
                 ))}
                 <Grid2 container columns={10}>
-                    <AirportAtisGridItems icao="" small free/>
+                    <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
                 </Grid2>
             </Grid2>
             <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>
@@ -100,7 +103,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             <TmuGridItem facility={radar.facility}/>
             <ReleaseRequestInformation facility={id} cid={session.user.cid} />
             {/*<NotamInformation facility={radar.facility} initialNotams={radar.notams} radar/>*/}
-            <SuaRequestInformation/>
+            <SuaRequestInformation disabled={TRAINING_MODE}/>
             <ButtonsTray radar={radar}/>
             <Viewer/>
         </Grid2>

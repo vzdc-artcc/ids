@@ -6,7 +6,7 @@ import {socket} from "@/lib/socket";
 import {formatZuluDate} from "@/lib/date";
 import {toast} from "react-toastify";
 
-export default function SuaRequestInformation() {
+export default function SuaRequestInformation({disabled}: { disabled?: boolean }) {
 
     const [suaRequests, setSuaRequests] = useState<{
         id: string;
@@ -28,7 +28,7 @@ export default function SuaRequestInformation() {
     const [activeSuas, setActiveSua] = useState<string[]>([]);
 
     useEffect(() => {
-
+        if (disabled) return;
         if (!suaRequests) {
             fetchSuaRequests().then(setSuaRequests);
         }
@@ -48,6 +48,7 @@ export default function SuaRequestInformation() {
         });
 
         return () => {
+            if (disabled) return;
             clearInterval(intervalId);
 
             socket.off("sua-activate");
@@ -67,6 +68,7 @@ export default function SuaRequestInformation() {
         <Grid2 size={5} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">SUA</Typography>
             <Box height={250} sx={{overflow: 'auto',}}>
+                {disabled && <Typography color="gray">DISABLED FOR TRAINING</Typography>}
                 <Grid2 container columns={2} spacing={1}>
                     {suaRequests && suaRequests.map((request) => (
                         <Grid2 size={{xs: 2, lg: 1}} key={request.id} sx={{p: 0.5, border: 1, borderColor: 'red',}}>
