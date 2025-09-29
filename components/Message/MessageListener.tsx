@@ -20,11 +20,19 @@ export default function MessageListener({ facility, cid }: { facility: string, c
             setOpen(true);
 
             playNewMessage().then();
-        })
+        });
+
+        socket.on('msg-*', (msg) => {
+            setMessage(msg);
+            setOpen(true);
+
+            playNewMessage().then();
+        });
 
         return () => {
             socket.off(`msg-${facility}`);
             socket.off(`msg-${cid}`);
+            socket.off('msg-*');
         }
     }, [cid, facility]);
 

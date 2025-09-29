@@ -15,7 +15,10 @@ export async function POST(req: NextRequest) {
             airport: {
                 icao: facility,
             },
-            presetName: atisUpdate.preset,
+            presetName: {
+                equals: atisUpdate.preset,
+                mode: 'insensitive',
+            },
         },
         include: {
             runways: {
