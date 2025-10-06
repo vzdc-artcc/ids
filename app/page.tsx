@@ -4,6 +4,7 @@ import {authOptions} from "@/auth/auth";
 import prisma from "@/lib/db";
 import Link from "next/link";
 
+const TRAINING_MODE = process.env.TRAINING_MODE === 'true';
 
 export default async function Home() {
 
@@ -66,6 +67,12 @@ export default async function Home() {
                             <ListItemText primary="IDS TMU"/>
                         </ListItemButton>
                     </Link>
+                    {TRAINING_MODE && <Link href={`/training/atis`}
+                                            style={{color: 'hotpink', textDecoration: 'none',}}>
+                        <ListItemButton>
+                            <ListItemText primary="TRAINER ATIS"/>
+                        </ListItemButton>
+                    </Link>}
                     <li>
                         <ul>
                             <ListSubheader>Airports</ListSubheader>

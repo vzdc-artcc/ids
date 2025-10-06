@@ -21,7 +21,7 @@ export default async function Layout({
 
     return (
         <Box sx={{mt: 2,}}>
-            <Typography variant="h6" textAlign="center" color="red" gutterBottom>FOR TRAINER USE ONLY</Typography>
+            <Typography variant="h6" textAlign="center" color="hotpink" gutterBottom>FOR TRAINER USE ONLY</Typography>
             {children}
         </Box>
     );
