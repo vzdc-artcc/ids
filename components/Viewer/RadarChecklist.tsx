@@ -22,10 +22,10 @@ export default function RadarChecklist() {
                     <FormControlLabel control={<Checkbox/>} label="Landing direction at controlled airports"/>
                 </ListItem>
                 <ListItem>
-                    <FormControlLabel control={<Checkbox/>} label="Weather (VFR/NVFR/IFR) & visual approach use"/>
+                    <FormControlLabel control={<Checkbox/>} label="Weather (VFR/MVFR/IFR) & visual approach use"/>
                 </ListItem>
                 <ListItem>
-                    <FormControlLabel control={<Checkbox/>} label="Low altimeter *at facilities owning FL180/ABV airspace"/>
+                    <FormControlLabel control={<Checkbox/>} label="Low altimeter *at facilities owning FL180/ABV airspace*"/>
                 </ListItem>
                 <ListItem>
                     <FormControlLabel control={<Checkbox/>} label="Non-standard conditions"/>
@@ -34,7 +34,7 @@ export default function RadarChecklist() {
                     <FormControlLabel control={<Checkbox/>} label="Note aircraft with clearances on ground"/>
                 </ListItem>
                 <ListItem>
-                    <FormControlLabel control={<Checkbox/>} label="Not any active point outs"/>
+                    <FormControlLabel control={<Checkbox/>} label="Note any active point outs"/>
                 </ListItem>
                 <ListItem>
                     <FormControlLabel control={<Checkbox/>} label="Review all airborne traffic"/>
