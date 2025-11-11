@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
         version: config.version,
         author: config.author,
     },
+    transpilePackages: ['react-map-gl'],
     images: {
         remotePatterns: [
             {

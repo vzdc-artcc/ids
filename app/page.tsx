@@ -67,6 +67,12 @@ export default async function Home() {
                             <ListItemText primary="IDS TMU"/>
                         </ListItemButton>
                     </Link>
+                    <Link href={`/app/conflict-probing`}
+                          style={{color: 'red', textDecoration: 'none',}}>
+                        <ListItemButton>
+                            <ListItemText primary="CONFLICT PROBING"/>
+                        </ListItemButton>
+                    </Link>
                     {TRAINING_MODE && <Link href={`/training/atis`}
                                             style={{color: 'hotpink', textDecoration: 'none',}}>
                         <ListItemButton>
