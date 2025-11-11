@@ -12,7 +12,7 @@ export default function ConflictProbingMapConfig({config, onChange}: {
 }) {
 
     const booleanKeys = Object.keys(config).filter(
-        (k) => typeof (config as any)[k] === 'boolean'
+        (k) => typeof (config as Record<string, boolean>)[k] === 'boolean'
     ) as string[];
 
     const labelize = (key: string) =>
@@ -28,7 +28,7 @@ export default function ConflictProbingMapConfig({config, onChange}: {
                 </Typography>
                 <FormGroup>
                     {booleanKeys.map((key) => {
-                        const checked = Boolean((config as any)[key]);
+                        const checked = Boolean((config as Record<string, boolean>)[key]);
                         return (
                             <FormControlLabel
                                 key={key}
@@ -36,7 +36,10 @@ export default function ConflictProbingMapConfig({config, onChange}: {
                                     <Checkbox
                                         checked={checked}
                                         onChange={() =>
-                                            onChange({...(config as any), [key]: !checked} as MapOptions)
+                                            onChange({
+                                                ...(config as Record<string, boolean>),
+                                                [key]: !checked
+                                            } as MapOptions)
                                         }
                                         size="small"
                                     />

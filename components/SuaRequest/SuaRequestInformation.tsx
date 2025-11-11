@@ -54,7 +54,7 @@ export default function SuaRequestInformation({disabled}: { disabled?: boolean }
             socket.off("sua-activate");
             socket.off("sua-deactivate");
         };
-    }, [suaRequests]);
+    }, [suaRequests, disabled]);
 
     const toggleActiveSuaRequest = (id: string) => {
         if (activeSuas.includes(id)) {
