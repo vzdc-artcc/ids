@@ -8,6 +8,7 @@ import Link from "next/link";
 import getConfig from 'next/config';
 import {Consolidation} from "@/components/Viewer/Consolidation";
 import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
+import AppPickerMenu from "@/components/AppPicker/AppPickerMenu";
 
 const {IS_STAFF_ENDPOINT, DEV_MODE} = process.env;
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
@@ -40,6 +41,7 @@ export default async function Navbar({session, activeConsol }: { session: Sessio
                 </Box>}
                 { activeConsol && <NavConsolidationDeleteButton id={activeConsol.id} /> }
                 <span style={{flexGrow: 1,}}></span>
+                <AppPickerMenu/>
                 {session && isStaff && <Link href="/admin" style={{color: 'inherit',}}>
                     <Button variant="contained" color="inherit" sx={{mr: 1,}}>ADMIN</Button>
                 </Link>}
