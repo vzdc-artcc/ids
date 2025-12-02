@@ -43,6 +43,15 @@ export const fetchBorderingSectors = async (user: User, thisRadar: Radar): Promi
         },
     });
 
+    const hiddenFacilityIds = await prisma.facility.findMany({
+        where: {
+            hiddenFromPicker: true,
+        },
+        select: {
+            id: true,
+        }
+    });
+
     if (!radarConsolidation) {
         return null;
     }
@@ -64,6 +73,10 @@ export const fetchBorderingSectors = async (user: User, thisRadar: Radar): Promi
     const borderingSectors: BorderingSector[] = [];
 
     for (const sector of allBorderingSectors) {
+        if (hiddenFacilityIds.map(f => f.id).includes(sector.radar.facilityId)) {
+            continue;
+        }
+
         const primaryConsolidation = await prisma.radarConsolidation.findFirst({
             where: {
                 primarySectorId: sector.id,
