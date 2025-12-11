@@ -113,7 +113,8 @@ export default function ReleaseRequestViewer() {
                 <Box key={dest} sx={{ m: 1, }}>
                     <Typography variant="h5" color="gold" fontWeight="bold" sx={{ border: 1, p: 0.5, px: 1, display: 'inline-block', }}>{dest}</Typography>
                     { requestGroupedByDestination && <Typography color="gold" sx={{ border: 1, p: 0.5, px: 1, display: 'inline-block', }}>{requestGroupedByDestination[dest].length} TOTAL / {(requestGroupedByDestination[dest]).filter((rr) => rr.released).length} REL</Typography> }
-                    <Box sx={{ border: 1, borderColor: 'gold', px: 1, height: 150, overflow: 'auto', }}>
+                    { requestGroupedByDestination && requestGroupedByDestination[dest].length > requestGroupedByDestination[dest].filter((rr) => rr.released).length && <Typography color="red" sx={{ border: 1, p: 0.5, px: 1, display: 'inline-block', }}>PENDING</Typography> }
+                    <Box sx={{ border: 1, borderColor: 'gold', px: 1, height: 300, overflow: 'auto', }}>
                         {requestGroupedByDestination && requestGroupedByDestination[dest].sort((a, b) => {
                             // sort by if there is a release time, then put them first ASC.  If not then sort by init time ASC
                             if (a.releaseTime && b.releaseTime) {
