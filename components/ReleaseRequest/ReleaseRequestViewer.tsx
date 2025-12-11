@@ -1,7 +1,7 @@
 'use client';
 import React, {useCallback, useEffect, useState} from 'react';
 import {ReleaseRequest, User} from "@prisma/client";
-import {Box, Button, Dialog, DialogContent, DialogTitle, Grid2, Stack, Typography} from "@mui/material";
+import {Box, Button, Dialog, DialogContent, DialogTitle, Divider, Grid2, Stack, Typography} from "@mui/material";
 import {formatZuluDate} from "@/lib/date";
 import {socket} from "@/lib/socket";
 import {
@@ -129,6 +129,7 @@ export default function ReleaseRequestViewer() {
                             return a.initTime.getTime() - b.initTime.getTime();
                         }).map((releaseRequest) => (
                             <Grid2 container columns={16} key={releaseRequest.id} spacing={3} alignItems="center" sx={{ minHeight: 50,  }}>
+                                <Divider />
                                 <Grid2 size={1}>
                                     <Typography fontWeight="bold" color="cyan">{releaseRequest.origin}</Typography>
                                 </Grid2>
@@ -147,12 +148,12 @@ export default function ReleaseRequestViewer() {
                                         <Typography color="red">{releaseRequest.aircraftType} | {releaseRequest.initState}</Typography>
                                     </Box>
                                 </Grid2>
-                                <Grid2 size={3}>
+                                <Grid2 size={2}>
                                     <Box sx={{ overflow: 'auto' }}>
                                         <Typography color="red">{releaseRequest.freeText}</Typography>
                                     </Box>
                                 </Grid2>
-                                <Grid2 size={6}>
+                                <Grid2 size={7}>
                                     <ReleaseRequestButtons releaseRequest={releaseRequest}/>
                                 </Grid2>
                             </Grid2>
