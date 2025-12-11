@@ -128,35 +128,38 @@ export default function ReleaseRequestViewer() {
                             }
                             return a.initTime.getTime() - b.initTime.getTime();
                         }).map((releaseRequest) => (
-                            <Grid2 container columns={16} key={releaseRequest.id} spacing={3} alignItems="center" sx={{ minHeight: 50,  }}>
+                            <Box key={releaseRequest.id}>
                                 <Divider />
-                                <Grid2 size={1}>
-                                    <Typography fontWeight="bold" color="cyan">{releaseRequest.origin}</Typography>
+                                <Grid2 container columns={16} spacing={3} alignItems="center" sx={{ minHeight: 50,  }}>
+                                    <Grid2 size={1}>
+                                        <Typography fontWeight="bold" color="cyan">{releaseRequest.origin}</Typography>
+                                    </Grid2>
+                                    <Grid2 size={1}>
+                                        <Typography>{releaseRequest.callsign}</Typography>
+                                    </Grid2>
+                                    <Grid2 size={1}>
+                                        <Typography>{formatZuluDate(releaseRequest.initTime, true)}</Typography>
+                                    </Grid2>
+                                    <Grid2 size={2}>
+                                        { releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">{getSingleLetterCondition(releaseRequest.condition)} {formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
+                                        { releaseRequest.released && !releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">ANY</Typography> }
+                                    </Grid2>
+                                    <Grid2 size={2}>
+                                        <Box sx={{ overflow: 'auto' }}>
+                                            <Typography color="red">{releaseRequest.aircraftType} | {releaseRequest.initState}</Typography>
+                                        </Box>
+                                    </Grid2>
+                                    <Grid2 size={2}>
+                                        <Box sx={{ overflow: 'auto' }}>
+                                            <Typography color="red">{releaseRequest.freeText}</Typography>
+                                        </Box>
+                                    </Grid2>
+                                    <Grid2 size={7}>
+                                        <ReleaseRequestButtons releaseRequest={releaseRequest}/>
+                                    </Grid2>
                                 </Grid2>
-                                <Grid2 size={1}>
-                                    <Typography>{releaseRequest.callsign}</Typography>
-                                </Grid2>
-                                <Grid2 size={1}>
-                                    <Typography>{formatZuluDate(releaseRequest.initTime, true)}</Typography>
-                                </Grid2>
-                                <Grid2 size={2}>
-                                    { releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">{getSingleLetterCondition(releaseRequest.condition)} {formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
-                                    { releaseRequest.released && !releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">ANY</Typography> }
-                                </Grid2>
-                                <Grid2 size={2}>
-                                    <Box sx={{ overflow: 'auto' }}>
-                                        <Typography color="red">{releaseRequest.aircraftType} | {releaseRequest.initState}</Typography>
-                                    </Box>
-                                </Grid2>
-                                <Grid2 size={2}>
-                                    <Box sx={{ overflow: 'auto' }}>
-                                        <Typography color="red">{releaseRequest.freeText}</Typography>
-                                    </Box>
-                                </Grid2>
-                                <Grid2 size={7}>
-                                    <ReleaseRequestButtons releaseRequest={releaseRequest}/>
-                                </Grid2>
-                            </Grid2>
+                            </Box>
+
                         ))}
                     </Box>
                 </Box>
