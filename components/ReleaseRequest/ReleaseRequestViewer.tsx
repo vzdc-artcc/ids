@@ -149,12 +149,12 @@ export default function ReleaseRequestViewer() {
                                             <Typography color="red">{releaseRequest.aircraftType} | {releaseRequest.initState}</Typography>
                                         </Box>
                                     </Grid2>
-                                    <Grid2 size={2}>
+                                    <Grid2 size={1}>
                                         <Box sx={{ overflow: 'auto' }}>
                                             <Typography color="red">{releaseRequest.freeText}</Typography>
                                         </Box>
                                     </Grid2>
-                                    <Grid2 size={7}>
+                                    <Grid2 size={8}>
                                         <ReleaseRequestButtons releaseRequest={releaseRequest}/>
                                     </Grid2>
                                 </Grid2>
