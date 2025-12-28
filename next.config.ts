@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
         serverActions: {
             bodySizeLimit: '1gb',
         },
+        webpackMemoryOptimizations: true,
     },
     publicRuntimeConfig: {
         version: config.version,
