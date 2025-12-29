@@ -1,4 +1,3 @@
-import config from './package.json' with {type: 'json'};
 import {NextConfig} from "next";
 
 const nextConfig: NextConfig = {
@@ -8,10 +7,6 @@ const nextConfig: NextConfig = {
             bodySizeLimit: '1gb',
         },
         webpackMemoryOptimizations: true,
-    },
-    publicRuntimeConfig: {
-        version: config.version,
-        author: config.author,
     },
     transpilePackages: ['react-map-gl'],
     images: {

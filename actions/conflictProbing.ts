@@ -11,9 +11,7 @@ export const fetchConflictProbingData = async (): Promise<ConflictProbingRespons
         headers: {
             'Content-Type': 'application/json',
         },
-        next: {
-            revalidate: 0,
-        },
+        cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -29,9 +27,7 @@ export const fetchConflictProbingConfig = async (): Promise<ConflictProbingConfi
         headers: {
             'Content-Type': 'application/json',
         },
-        next: {
-            revalidate: 0,
-        },
+        cache: 'no-store',
     });
 
     if (!res.ok) {
