@@ -13,6 +13,7 @@ import {ToastContainer} from "react-toastify";
 import {Metadata} from "next";
 import prisma from "@/lib/db";
 import {Consolidation} from "@/components/Viewer/Consolidation";
+import Script from "next/script"
 
 const roboto = Roboto({
     weight: ['300', '400', '500', '700'],
