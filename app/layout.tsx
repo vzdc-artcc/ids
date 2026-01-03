@@ -61,6 +61,11 @@ export default async function RootLayout({
             </Container>
             <Container maxWidth="xl" sx={{display: {xs: 'none', lg: 'inherit'},}}>
                 {children}
+            <Script
+                src="https://rybbit.vzdc.org/api/script.js"
+                data-site-id={process.env.NEXT_PUBLIC_RYBBIT_SITE_ID}
+                strategy="afterInteractive"
+            />
             </Container>
             <ToastContainer theme="dark"/>
         </ThemeProvider>
