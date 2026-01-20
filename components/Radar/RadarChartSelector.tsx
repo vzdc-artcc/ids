@@ -9,7 +9,7 @@ export default function RadarChartSelector({airports}: { airports: Airport[], })
     const [selectedIcao, setSelectedIcao] = useState<string | null>(null);
 
     return (
-        <Grid2 size={9} sx={{border: 1}}>
+        <Grid2 size={9} height={250} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">CHARTS</Typography>
             <Autocomplete
                 options={airports.map((airport) => airport.icao)}

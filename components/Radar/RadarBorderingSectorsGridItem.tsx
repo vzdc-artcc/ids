@@ -1,11 +1,13 @@
 'use client';
 import React, {useEffect, useState} from 'react';
-import {CircularProgress, Grid2, Typography} from "@mui/material";
+import {Button, CircularProgress, Grid2, Typography} from "@mui/material";
 import {BorderingSector, fetchBorderingSectors, RadarSectorWithRadar} from "@/actions/borderingSectors";
 import {socket} from "@/lib/socket";
 import {Radar} from "@prisma/client";
 import {toast} from "react-toastify";
 import {User} from "next-auth";
+import {Refresh} from "@mui/icons-material";
+import {useRouter} from "next/navigation";
 
 interface SectorWithBordering {
     primarySector: RadarSectorWithRadar;
@@ -47,8 +49,11 @@ export default function RadarBorderingSectorsGridItem({user, radar}: { user: Use
     }
 
     return (
-        <Grid2 size={4} height={250} sx={{border: 1, overflowY: 'auto' }}>
+        <Grid2 size={3} height={250} sx={{border: 1, overflowY: 'auto' }}>
             {/*<Typography variant="h6">BORDERING SECTORS</Typography>*/}
+            <Button variant="outlined" color="info" size="small" onClick={() => {
+                window.location.reload();
+            }} sx={{ width: '100%', fontSize: 10, }} startIcon={<Refresh />}>Refresh METARs/ATIS?</Button>
             <Grid2 container columns={3}>
                 {borderingSectors === null &&
                     <Typography>You have no bordering sectors. Please define a radar consolidation to tell the system

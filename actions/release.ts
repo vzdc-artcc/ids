@@ -174,3 +174,17 @@ export const deleteReleaseRequests = async (onlyPast: boolean) => {
 
     revalidatePath('/', 'layout');
 }
+
+export const notifyNewReleaseStatus = async (id: string, status: string) => {
+    return prisma.releaseRequest.update({
+        where: {
+            id,
+        },
+        data: {
+            initState: status,
+        },
+        include: {
+            startedBy: true,
+        },
+    });
+}

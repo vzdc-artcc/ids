@@ -32,7 +32,7 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                         <Button color="secondary">SOP</Button>
                     </Link>
                     <Link
-                        href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/publications/downloads'}))}>
+                        href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/publications/downloads?openInNewTab=false'}))}>
                         <Button color="secondary">PUB</Button>
                     </Link>
                     <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://asx.vzdc.org'}))}>

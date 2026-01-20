@@ -1,7 +1,7 @@
 import React from 'react';
 import prisma from "@/lib/db";
 import {notFound} from "next/navigation";
-import {Grid2} from "@mui/material";
+import {Grid2, Typography} from "@mui/material";
 import Viewer from "@/components/Viewer/Viewer";
 import ButtonsTray from "@/components/Tray/ButtonsTray";
 import TmuGridItem from "@/components/Tmu/TmuGridItem";
@@ -89,7 +89,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         <Grid2 container columns={12}>
             <RadarConsolidationDialog session={session} existing={myRadarConsolidation as Consolidation }/>
             <MessageListener facility={id} cid={session.user.cid} />
-            <Grid2 size={8} height={250} sx={{border: 1, overflowY: 'auto', }}>
+            <Grid2 size={8} sx={{border: 1, overflowY: 'auto', height: '100%', }}>
                 {radar.connectedAirports.map((airport) => (
                     <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}
                                              disableOnlineInformation={TRAINING_MODE}/>
@@ -98,9 +98,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                     <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
                 </Grid2>
             </Grid2>
-            <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>
-            <RadarChartSelector airports={radar.connectedAirports}/>
             <TmuGridItem facility={radar.facility}/>
+            <RadarChartSelector airports={radar.connectedAirports}/>
+            <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>
             <ReleaseRequestInformation facility={id} cid={session.user.cid} />
             {/*<NotamInformation facility={radar.facility} initialNotams={radar.notams} radar/>*/}
             <SuaRequestInformation disabled={TRAINING_MODE}/>

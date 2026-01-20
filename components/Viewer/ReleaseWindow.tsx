@@ -22,8 +22,8 @@ export default function ReleaseWindow({ facilityId, onSubmit }: { facilityId: st
         socket.emit('new-release-request', request.id);
         toast.success(`${request.callsign} FROM ${request.origin} -> ${request.destination}`);
         onSubmit?.();
-        setInitState('-');
-        setAircraftType('-');
+        setInitState('PSH');
+        setAircraftType('J');
     }
 
     return (

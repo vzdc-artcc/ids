@@ -28,33 +28,30 @@ export default function SuaRequestInformation({disabled}: { disabled?: boolean }
     const [activeSuas, setActiveSua] = useState<string[]>([]);
 
     useEffect(() => {
+        socket.on("sua-activate", (id:  string) => {
+            setActiveSua((prev) => [...prev, id]);
+        });
+        socket.on("sua-deactivate", (id: string) => {
+            setActiveSua((prev) => prev.filter((suaId) => suaId !== id));
+        });
+
+        return () => {
+            socket.off("sua-activate");
+            socket.off("sua-deactivate");
+        };
+    }, []);
+
+    useEffect(() => {
         if (disabled) return;
-        if (!suaRequests) {
-            fetchSuaRequests().then(setSuaRequests);
-        }
+
+        fetchSuaRequests().then(setSuaRequests);
 
         const intervalId = setInterval(() => {
             fetchSuaRequests().then(setSuaRequests);
         }, 30000);
 
-        socket.on("sua-activate", (id: string) => {
-            setActiveSua((prev) => [...prev, id]);
-            toast.info('SUA requests updated.');
-        });
-
-        socket.on("sua-deactivate", (id: string) => {
-            setActiveSua((prev) => prev.filter((suaId) => suaId !== id));
-            toast.info('SUA requests updated.');
-        });
-
-        return () => {
-            if (disabled) return;
-            clearInterval(intervalId);
-
-            socket.off("sua-activate");
-            socket.off("sua-deactivate");
-        };
-    }, [suaRequests, disabled]);
+        return () => clearInterval(intervalId);
+    }, [disabled]);
 
     const toggleActiveSuaRequest = (id: string) => {
         if (activeSuas.includes(id)) {

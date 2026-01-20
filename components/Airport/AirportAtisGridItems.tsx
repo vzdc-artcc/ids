@@ -24,72 +24,85 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
     const [metar, setMetar] = useState<string>();
 
     useEffect(() => {
-        if (!free) {
-            socket.on(`${airportIcao}-atis`, (data: AtisUpdate) => {
-                switch (data.atisType) {
-                    case 'combined':
-                        setCombinedAtis(data);
-                        break;
-                    case 'departure':
-                        setDepartureAtis(data);
-                        break;
-                    case 'arrival':
-                        setArrivalAtis(data);
-                        break;
-                }
-            });
+        const handleAtis = (data: AtisUpdate) => {
+            switch (data.atisType) {
+                case 'combined':
+                    setCombinedAtis(data);
+                    break;
+                case 'departure':
+                    setDepartureAtis(data);
+                    break;
+                case 'arrival':
+                    setArrivalAtis(data);
+                    break;
+            }
+        };
+
+        const handleVatsimData = (data: any) => {
             if (!disableOnlineInformation) {
-                socket.on('vatsim-data', (data) => {
-                    fetchMetar(airportIcao).then(setMetar);
-                    const atis = (data.atis as {
-                        atis_code: string,
-                        callsign: string,
-                        frequency: string,
-                        text_atis: string[],
-                    }[])
-                        .filter((atis) => airportIcao.length === 4 ? atis.callsign.startsWith(airportIcao) : false);
+                fetchMetar(airportIcao).then(setMetar);
+                const atis = (data.atis as {
+                    atis_code: string,
+                    callsign: string,
+                    frequency: string,
+                    text_atis: string[],
+                }[])
+                    .filter((atis) => airportIcao.length === 4 ? atis.callsign.startsWith(airportIcao) : false);
 
-                    if (atis.length === 0) {
-                        setCombinedAtis(undefined);
-                        setDepartureAtis(undefined);
-                        setArrivalAtis(undefined);
-                        return;
+                if (atis.length === 0) {
+                    setCombinedAtis(undefined);
+                    setDepartureAtis(undefined);
+                    setArrivalAtis(undefined);
+                    return;
+                }
+
+                atis.forEach((atis) => {
+                    const atisLetter = atis.atis_code || ((atis.text_atis as string[]) || [''])[0]?.match(/ATIS INFO ([A-Z])/i)?.[1] || '-';
+
+                    const atisUpdate = {
+                        atisLetter,
+                        airportConditions: atis.text_atis?.join(' ') || 'N/A',
+                        notams: 'N/A',
+                    } as AtisUpdate;
+
+                    // more than 5 minutes old
+                    const tenMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+                    if (atis.callsign.includes('_D_')) {
+                        setDepartureAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
+                    } else if (atis.callsign.includes('_A_')) {
+                        setArrivalAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
+                    } else {
+                        setCombinedAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
                     }
-
-                    atis.forEach((atis) => {
-                        const atisLetter = atis.atis_code || ((atis.text_atis as string[]) || [''])[0]?.match(/ATIS INFO ([A-Z])/i)?.[1] || '-';
-
-                        const atisUpdate = {
-                            atisLetter,
-                            airportConditions: atis.text_atis?.join(' ') || 'N/A',
-                            notams: 'N/A',
-                        } as AtisUpdate;
-
-                        // more than 5 minutes old
-                        const tenMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-                        if (atis.callsign.includes('_D_')) {
-                            setDepartureAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                        } else if (atis.callsign.includes('_A_')) {
-                            setArrivalAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                        } else {
-                            setCombinedAtis((prev) => !prev || new Date(prev.timestamp) < tenMinutesAgo ? atisUpdate : prev);
-                        }
-                    });
                 });
             }
+        }
 
-            socket.on(`${airportIcao}-vatis-integration`, (enabled: boolean) => {
+        const handleVatisIntegration = (enabled: boolean) => {
+            if (!disableOnlineInformation) {
                 setAtisDisabled(!enabled);
                 toast.warning(`ATIS Mode changed for ${airportIcao}`);
-            })
-        }
-        return () => {
-            socket.off(`${airportIcao}-vatis-integration`)
-            if (!disableOnlineInformation) {
-                socket.off('vatsim-data');
             }
-            socket.off(`${airportIcao}-atis`);
         };
+
+        if (!free) {
+            socket.on(`${airportIcao}-atis`, handleAtis);
+            socket.on('vatsim-data', handleVatsimData);
+        }
+
+        socket.on(`${airportIcao}-vatis-integration`, handleVatisIntegration);
+
+        return () => {
+            socket.off(`${airportIcao}-vatis-integration`, handleVatisIntegration);
+            socket.off('vatsim-data', handleVatsimData);
+            socket.off(`${airportIcao}-atis`, handleAtis);
+        };
+    }, [airportIcao, free, disableOnlineInformation]);
+
+    useEffect(() => {
+        if (!free && !disableOnlineInformation) {
+            fetchMetar(airportIcao).then(setMetar);
+        }
     }, [airportIcao, free, disableOnlineInformation]);
 
     const {wind, altimeter} = getWindAndAltimeter(metar || '');
@@ -103,8 +116,9 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         return (
             <>
                 <Grid2 size={1} sx={{border: 1,}}>
-                    {free && 
-                    <TextField variant="outlined" label="ICAO" size="small" value={airportIcao} onChange={handleAirportIcaoChange} sx={{width: '100%', }}  />
+                    {free &&
+                        <TextField variant="outlined" label="ICAO" size="small" value={airportIcao}
+                                   onChange={handleAirportIcaoChange} sx={{width: '100%',}}/>
                     }
                     {!free && !atisDisabled &&
                         <Typography variant="h6" textAlign="center">{airportIcao.toUpperCase()}</Typography>}
@@ -188,7 +202,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                 {combinedAtis && <Typography
                     variant="subtitle2">{combinedAtis.airportConditions} NOTAMS {combinedAtis.notams}</Typography>}
                 {!combinedAtis && departureAtis && <Typography variant="subtitle2"
-                    color="green">{departureAtis.airportConditions} NOTAMS {departureAtis.notams}</Typography>}
+                                                               color="green">{departureAtis.airportConditions} NOTAMS {departureAtis.notams}</Typography>}
                 {!combinedAtis && arrivalAtis &&
                     <Typography variant="subtitle2"
                                 color="red">{arrivalAtis.airportConditions} NOTAMS {arrivalAtis.notams}</Typography>}

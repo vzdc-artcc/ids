@@ -27,7 +27,7 @@ export default function Viewer() {
 
 
     return (
-        <Grid2 size={12} sx={{border: 1, minHeight: 950,}}>
+        <Grid2 size={12} sx={{border: 1, borderBottom: 0, minHeight: 950,}}>
             <SessionProvider>
                 <Typography variant="h6">VIEWER</Typography>
                 <div style={{paddingTop: 64, height: '1px',}} id="viewer"></div>

@@ -15,6 +15,7 @@ import {Delete} from "@mui/icons-material";
 import {shouldKeepReleaseRequest} from "@/lib/releaseRequest";
 import MessageForm from "@/components/ReleaseRequest/MessageForm";
 import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
+import {toast} from "react-toastify";
 
 export type ReleaseRequestWithAll = ReleaseRequest & {
     startedBy: User,
@@ -30,7 +31,7 @@ export default function ReleaseRequestViewer() {
         return reqs.filter((rr) => {
             const shouldKeep = shouldKeepReleaseRequest(rr);
 
-            if (!shouldKeep) {
+            if (! shouldKeep) {
                 deleteReleaseRequest(rr.id).then();
             }
 
@@ -40,63 +41,77 @@ export default function ReleaseRequestViewer() {
 
     const refreshReleaseRequests = useCallback(async () => {
         const releaseRequests = await fetchReleaseRequests();
-
         setReleaseRequests(filterExpiredReleases(releaseRequests));
     }, [filterExpiredReleases]);
 
     useEffect(() => {
-
-        if (!releaseRequests) {
-            refreshReleaseRequests().then();
-        }
-
         socket.on('new-release-request', (requestId: string) => {
             fetchReleaseRequest(requestId).then((r) => {
-                if (!r) return;
-
-                setReleaseRequests((prev) => [...(prev || []), r as ReleaseRequestWithAll]);
+                if (! r) return;
+                setReleaseRequests((prev) => [... (prev || []), r as ReleaseRequestWithAll]);
             });
         });
 
-        socket.on('delete-release-request', (requestId?: string) => {
-            if (!requestId) return;
-
-            setReleaseRequests((prev) => prev?.filter((r) => r.id !== requestId));
+        socket.on('delete-release-request', (requestId?:  string) => {
+            if (! requestId) return;
+            setReleaseRequests((prev) => prev?. filter((r) => r.id !== requestId));
         });
 
         socket.on('refresh-release', () => {
-            refreshReleaseRequests().then();
+            fetchReleaseRequests().then((reqs) => {
+                setReleaseRequests(reqs. filter(shouldKeepReleaseRequest));
+            });
         });
 
-        const intervalId = setInterval(() => {
-            if (!releaseRequests) return;
-            setReleaseRequests(filterExpiredReleases(releaseRequests));
-        }, 1000*10);
+        socket.on('refresh-release-status', (r) => {
+            refreshReleaseRequests().then(() => {
+                toast.info(`${r.callsign} release status updated.`);
+            });
+        });
 
         return () => {
-            clearInterval(intervalId);
-
             socket.off('refresh-release');
             socket.off('delete-release-request');
             socket.off('new-release-request');
-        }
-    }, [releaseRequests, refreshReleaseRequests, filterExpiredReleases]);
+            socket.off('refresh-release-status');
+        };
+    }, []);
+
+    useEffect(() => {
+        refreshReleaseRequests().then();
+    }, [refreshReleaseRequests]);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setReleaseRequests((prev) => {
+                if (! prev) return prev;
+                return prev.filter((rr) => {
+                    const shouldKeep = shouldKeepReleaseRequest(rr);
+                    if (!shouldKeep) {
+                        deleteReleaseRequest(rr.id).then();
+                    }
+                    return shouldKeep;
+                });
+            });
+        }, 1000 * 10);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     const deleteAll = async (past: boolean) => {
         deleteReleaseRequests(past).then(() => {
-            socket.emit('delete-release-request', );
-
-            refreshReleaseRequests().then();
+            socket.emit('delete-release-request');
+            refreshReleaseRequests();
         });
     }
 
-    const requestGroupedByDestination = releaseRequests?.reduce((acc, curr) => {
+    const requestGroupedByDestination = releaseRequests?. reduce((acc, curr) => {
         if (!acc[curr.destination]) {
-            acc[curr.destination] = [];
+            acc[curr. destination] = [];
         }
-        acc[curr.destination].push(curr);
+        acc[curr.destination]. push(curr);
         return acc;
-    }, {} as { [key: string]: ReleaseRequestWithAll[] });
+    }, {} as { [key: string]:  ReleaseRequestWithAll[] });
 
     return (
         <>

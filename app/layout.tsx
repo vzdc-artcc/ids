@@ -62,7 +62,7 @@ export default async function RootLayout({
             <Container maxWidth="xl" sx={{display: {xs: 'none', lg: 'inherit'},}}>
                 {children}
             </Container>
-            <ToastContainer theme="dark"/>
+            <ToastContainer theme="dark" autoClose={1000} />
         </ThemeProvider>
     </AppRouterCacheProvider>
       </body>

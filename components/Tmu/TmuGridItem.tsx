@@ -23,11 +23,11 @@ export default function TmuGridItem({facility}: { facility: Facility, }) {
     }, [facility]);
 
     return (
-        <Grid2 size={3} sx={{border: 1, overflowY: 'auto', }}>
+        <Grid2 size={4} height={250} sx={{border: 1, overflowY: 'auto', }}>
             <Typography variant="h6">TMU</Typography>
-            <Box height={250} sx={{overflow: 'auto',}}>
+            <Box sx={{overflow: 'auto',}}>
                 {broadcasts?.map((broadcast) => (
-                    <Typography key={broadcast.id} color="orange" fontWeight="bold">{broadcast.message}</Typography>
+                    <Typography key={broadcast.id} color="orange" fontSize={13}>{broadcast.message}</Typography>
                 ))}
             </Box>
         </Grid2>
