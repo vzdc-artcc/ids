@@ -6,7 +6,7 @@ import {fetchSingleTmu} from "@/actions/tmu";
 import {socket} from "@/lib/socket";
 import {toast} from "react-toastify";
 
-export default function TmuGridItem({facility}: { facility: Facility, }) {
+export default function TmuGridItem({facility, big}: { facility: Facility, big?: boolean }) {
 
     const [broadcasts, setBroadcasts] = useState<TmuNotice[]>();
 
@@ -23,7 +23,7 @@ export default function TmuGridItem({facility}: { facility: Facility, }) {
     }, [facility]);
 
     return (
-        <Grid2 size={4} height={250} sx={{border: 1, overflowY: 'auto', }}>
+        <Grid2 size={big ? 4 : 3} height={250} sx={{border: 1, overflowY: 'auto', }}>
             <Typography variant="h6">TMU</Typography>
             <Box sx={{overflow: 'auto',}}>
                 {broadcasts?.map((broadcast) => (

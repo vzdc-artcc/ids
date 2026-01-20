@@ -98,7 +98,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                     <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
                 </Grid2>
             </Grid2>
-            <TmuGridItem facility={radar.facility}/>
+            <TmuGridItem facility={radar.facility} big />
             <RadarChartSelector airports={radar.connectedAirports}/>
             <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>
             <ReleaseRequestInformation facility={id} cid={session.user.cid} />
