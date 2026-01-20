@@ -7,7 +7,6 @@ import {Radar} from "@prisma/client";
 import {toast} from "react-toastify";
 import {User} from "next-auth";
 import {Refresh} from "@mui/icons-material";
-import {useRouter} from "next/navigation";
 
 interface SectorWithBordering {
     primarySector: RadarSectorWithRadar;

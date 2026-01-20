@@ -1,6 +1,6 @@
 'use client';
 import React, {useEffect} from 'react';
-import {Box, Button, ButtonGroup, CircularProgress, Typography} from "@mui/material";
+import {Box, Button, ButtonGroup, CircularProgress} from "@mui/material";
 import {fetchCharts} from "@/actions/charts";
 import {usePathname, useRouter} from "next/navigation";
 import {toast} from "react-toastify";

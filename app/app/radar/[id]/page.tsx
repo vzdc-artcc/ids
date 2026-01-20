@@ -1,7 +1,7 @@
 import React from 'react';
 import prisma from "@/lib/db";
 import {notFound} from "next/navigation";
-import {Grid2, Typography} from "@mui/material";
+import {Grid2} from "@mui/material";
 import Viewer from "@/components/Viewer/Viewer";
 import ButtonsTray from "@/components/Tray/ButtonsTray";
 import TmuGridItem from "@/components/Tmu/TmuGridItem";

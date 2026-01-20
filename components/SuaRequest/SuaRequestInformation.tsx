@@ -4,7 +4,6 @@ import {Box, Divider, Grid2, Switch, Tooltip, Typography} from "@mui/material";
 import {fetchSuaRequests} from "@/actions/sua";
 import {socket} from "@/lib/socket";
 import {formatZuluDate} from "@/lib/date";
-import {toast} from "react-toastify";
 
 export default function SuaRequestInformation({disabled}: { disabled?: boolean }) {
 
