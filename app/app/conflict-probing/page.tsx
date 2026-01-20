@@ -35,6 +35,10 @@ export default function Page() {
         }
     }, []);
 
+    useEffect(() => {
+        fetchConflictProbingData().then(setData).catch(console.error);
+    }, []);
+
     if (!config || !data) {
         return (
             <Card sx={{mt: 4,}}>

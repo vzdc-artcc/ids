@@ -24,6 +24,10 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                     <Link href={redirectToViewer('rel', new URLSearchParams({facility: airport?.facilityId || radar?.facilityId || '',}))} style={{ color: 'inherit', }}>
                         <Button color="inherit" sx={{ backgroundColor: 'lightcyan', color: 'black' }}>REL</Button>
                     </Link>
+                    <Link
+                        href={redirectToViewer('url', new URLSearchParams({url: '/app/conflict-probing'}))}>
+                        <Button color="inherit" sx={{ backgroundColor: 'darkviolet', color: 'white' }}>CONF-P</Button>
+                    </Link>
                     <Link href={redirectToViewer('prd', new URLSearchParams({startAirport: airport?.iata || '',}))}>
                         <Button color="success">PRD</Button>
                     </Link>
