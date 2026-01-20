@@ -13,6 +13,7 @@ import {ToastContainer} from "react-toastify";
 import {Metadata} from "next";
 import prisma from "@/lib/db";
 import {Consolidation} from "@/components/Viewer/Consolidation";
+import Script from "next/script"
 
 const roboto = Roboto({
     weight: ['300', '400', '500', '700'],
@@ -61,6 +62,11 @@ export default async function RootLayout({
             </Container>
             <Container maxWidth="xl" sx={{display: {xs: 'none', lg: 'inherit'},}}>
                 {children}
+            <Script
+                src="https://rybbit.vzdc.org/api/script.js"
+                data-site-id={process.env.NEXT_PUBLIC_RYBBIT_SITE_ID}
+                strategy="afterInteractive"
+            />
             </Container>
             <ToastContainer theme="dark" autoClose={1000} />
         </ThemeProvider>
