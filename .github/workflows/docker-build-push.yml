@@ -111,3 +111,4 @@ jobs:
           IMAGE_TAG: ghcr.io/${{ github.repository }}:master-${{ env.COMMIT_HASH }}
         run: |
           kubectl set image deployment/ids ids=$IMAGE_TAG run-migrations=$IMAGE_TAG -n default
+          kubectl set image deployment/training-ids ids=$IMAGE_TAG run-migrations=$IMAGE_TAG -n default
