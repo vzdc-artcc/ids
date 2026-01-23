@@ -116,6 +116,6 @@ jobs:
       - name: Update Kubernetes Deployment (TRAINING)
         if: ${{ steps.extract_branch.outputs.branch == 'training' }}
         env:
-          IMAGE_TAG: ghcr.io/${{ github.repository }}:master-${{ env.COMMIT_HASH }}
+          IMAGE_TAG: ghcr.io/${{ github.repository }}:training-${{ env.COMMIT_HASH }}
         run: |
            kubectl set image deployment/training-ids ids=$IMAGE_TAG run-migrations=$IMAGE_TAG -n default
