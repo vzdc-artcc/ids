@@ -18,8 +18,10 @@ export default function AirportLocalInformation({airport, small, disableOnlineIn
     const router = useRouter();
 
     useEffect(() => {
-        if (!disableOnlineInformation) {
-            socket.on('vatsim-data', (data) => {
+        let isMounted = true;
+
+        const handleVatsimData = (data: any) => {
+            if (isMounted) {
                 setOnlineAtc((data.controllers as {
                     callsign: string,
                     frequency: string,
@@ -34,18 +36,27 @@ export default function AirportLocalInformation({airport, small, disableOnlineIn
                         frequency: controller.frequency,
                         facility: controller.facility,
                     })));
-            });
+            }
+        };
+
+        const handleLocalSplitUpdate = (data: string[]) => {
+            if (isMounted) {
+                setLocalSplit(data);
+                toast.info(`${airport.icao} local split has been updated.`);
+            }
+        };
+
+        if (!disableOnlineInformation) {
+            socket.on('vatsim-data', handleVatsimData);
         }
-        socket.on(`${airport.facilityId}-lcl-split`, (data: string[]) => {
-            setLocalSplit(data);
-            toast.info(`${airport.icao} local split has been updated.`);
-        });
+        socket.on(`${airport.facilityId}-lcl-split`, handleLocalSplitUpdate);
 
         return () => {
+            isMounted = false;
             if (!disableOnlineInformation) {
-                socket.off('vatsim-data');
+                socket.off('vatsim-data', handleVatsimData);
             }
-            socket.off(`${airport.facilityId}-lcl-split`);
+            socket.off(`${airport.facilityId}-lcl-split`, handleLocalSplitUpdate);
         };
     }, [router, airport, disableOnlineInformation]);
 

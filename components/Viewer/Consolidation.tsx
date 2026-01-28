@@ -58,16 +58,40 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
     const [consolidateAllSectors, setConsolidateAllSectors] = useState<boolean>(false);
 
     useEffect(() => {
-        fetchAllConsolidations().then((all) => {
-            setAllRadarConsolidations(all);
-            setYourConsolidation(all.find((consolidation) => consolidation.user.id === (selectedUser?.id || session.data?.user?.id)) || null);
-        });
-        fetchAllRadarSectors().then(setAllRadarSectors);
-        fetchAllDefaultRadarConsolidations().then(setAllDefaultConsolidations);
-        fetchAllUsers().then(setAllUsers);
-        if (!selectedUser) {
-            setSelectedUser(session.data?.user as User);
-        }
+        let isMounted = true;
+
+        const loadData = async () => {
+            try {
+                const [all, sectors, defaults, users] = await Promise.all([
+                    fetchAllConsolidations(),
+                    fetchAllRadarSectors(),
+                    fetchAllDefaultRadarConsolidations(),
+                    fetchAllUsers(),
+                ]);
+
+                if (!isMounted) return;
+
+                setAllRadarConsolidations(all);
+                setYourConsolidation(all.find((consolidation) => consolidation.user.id === (selectedUser?.id || session.data?.user?.id)) || null);
+                setAllRadarSectors(sectors);
+                setAllDefaultConsolidations(defaults);
+                setAllUsers(users);
+
+                if (!selectedUser && session.data?.user) {
+                    setSelectedUser(session.data.user as User);
+                }
+            } catch (error) {
+                if (isMounted) {
+                    console.error('Error loading consolidation data:', error);
+                }
+            }
+        };
+
+        loadData();
+
+        return () => {
+            isMounted = false;
+        };
     }, [session, selectedUser]);
 
     const handleEditToggle = (id: string | null, consolidation?: Consolidation) => {
@@ -121,7 +145,11 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
                 toast.success('Consolidation created successfully');
             }
         }
-        fetchAllConsolidations().then(setAllRadarConsolidations);
+        fetchAllConsolidations().then((all) => {
+            setAllRadarConsolidations(all);
+        }).catch((error) => {
+            console.error('Error fetching consolidations:', error);
+        });
         if (!yourConsolidation) {
             setPrimarySector(null);
         }
@@ -134,7 +162,11 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
     const handleDelete = async (id: string) => {
         await deleteConsolidation(id);
         toast.success('Consolidation deleted successfully');
-        fetchAllConsolidations().then(setAllRadarConsolidations);
+        fetchAllConsolidations().then((all) => {
+            setAllRadarConsolidations(all);
+        }).catch((error) => {
+            console.error('Error fetching consolidations:', error);
+        });
         socket.emit('radar-consolidation');
     };
 
@@ -152,7 +184,7 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
                 <CardContent>
                     <Typography variant="h6">Active Radar Consolidations</Typography>
                     <Button variant="contained" size="small"
-                            onClick={() => fetchAllConsolidations().then(setAllRadarConsolidations)} sx={{mt: 1,}}>Refresh
+                            onClick={() => fetchAllConsolidations().then((all) => setAllRadarConsolidations(all)).catch((error) => console.error('Error fetching consolidations:', error))} sx={{mt: 1,}}>Refresh
                         Consolidations</Button>
                     <Typography variant="subtitle1" gutterBottom>Use this if consolidations have changed while this tab
                         was open.</Typography>

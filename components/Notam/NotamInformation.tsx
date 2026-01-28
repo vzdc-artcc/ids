@@ -14,13 +14,20 @@ export default function NotamInformation({facility, initialNotams, radar,}: {
     const [notams, setNotams] = useState<string[]>(initialNotams);
 
     useEffect(() => {
-        socket.on(`${facility.id}-notam`, (data: string[]) => {
-            setNotams(data);
-            toast.info(`${facility.id} NOTAMs have been updated.`);
-        });
+        let isMounted = true;
+
+        const handleNotamUpdate = (data: string[]) => {
+            if (isMounted) {
+                setNotams(data);
+                toast.info(`${facility.id} NOTAMs have been updated.`);
+            }
+        };
+
+        socket.on(`${facility.id}-notam`, handleNotamUpdate);
 
         return () => {
-            socket.off(`${facility.id}-notam`);
+            isMounted = false;
+            socket.off(`${facility.id}-notam`, handleNotamUpdate);
         };
     }, [facility]);
 

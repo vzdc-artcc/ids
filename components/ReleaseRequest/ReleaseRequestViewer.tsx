@@ -32,7 +32,9 @@ export default function ReleaseRequestViewer() {
             const shouldKeep = shouldKeepReleaseRequest(rr);
 
             if (! shouldKeep) {
-                deleteReleaseRequest(rr.id).then();
+                deleteReleaseRequest(rr.id).then().catch((error) => {
+                    console.error('Error deleting release request:', error);
+                });
             }
 
             return shouldKeep;
@@ -40,69 +42,115 @@ export default function ReleaseRequestViewer() {
     }, []);
 
     const refreshReleaseRequests = useCallback(async () => {
-        const releaseRequests = await fetchReleaseRequests();
-        setReleaseRequests(filterExpiredReleases(releaseRequests));
+        try {
+            const releaseRequests = await fetchReleaseRequests();
+            setReleaseRequests(filterExpiredReleases(releaseRequests));
+        } catch (error) {
+            console.error('Error refreshing release requests:', error);
+        }
     }, [filterExpiredReleases]);
 
     useEffect(() => {
-        socket.on('new-release-request', (requestId: string) => {
+        let isMounted = true;
+
+        const handleNewReleaseRequest = (requestId: string) => {
             fetchReleaseRequest(requestId).then((r) => {
-                if (! r) return;
+                if (! r || !isMounted) return;
                 setReleaseRequests((prev) => [... (prev || []), r as ReleaseRequestWithAll]);
+            }).catch((error) => {
+                console.error('Error fetching release request:', error);
             });
-        });
+        };
 
-        socket.on('delete-release-request', (requestId?:  string) => {
-            if (! requestId) return;
+        const handleDeleteReleaseRequest = (requestId?:  string) => {
+            if (! requestId || !isMounted) return;
             setReleaseRequests((prev) => prev?. filter((r) => r.id !== requestId));
-        });
+        };
 
-        socket.on('refresh-release', () => {
+        const handleRefreshRelease = () => {
             fetchReleaseRequests().then((reqs) => {
+                if (!isMounted) return;
                 setReleaseRequests(reqs. filter(shouldKeepReleaseRequest));
+            }).catch((error) => {
+                console.error('Error fetching release requests:', error);
             });
-        });
+        };
 
-        socket.on('refresh-release-status', (r) => {
+        const handleRefreshReleaseStatus = (r: any) => {
             refreshReleaseRequests().then(() => {
-                toast.info(`${r.callsign} release status updated.`);
+                if (isMounted) {
+                    toast.info(`${r.callsign} release status updated.`);
+                }
+            }).catch((error) => {
+                console.error('Error refreshing release requests:', error);
             });
-        });
+        };
+
+        socket.on('new-release-request', handleNewReleaseRequest);
+        socket.on('delete-release-request', handleDeleteReleaseRequest);
+        socket.on('refresh-release', handleRefreshRelease);
+        socket.on('refresh-release-status', handleRefreshReleaseStatus);
 
         return () => {
-            socket.off('refresh-release');
-            socket.off('delete-release-request');
-            socket.off('new-release-request');
-            socket.off('refresh-release-status');
+            isMounted = false;
+            socket.off('new-release-request', handleNewReleaseRequest);
+            socket.off('delete-release-request', handleDeleteReleaseRequest);
+            socket.off('refresh-release', handleRefreshRelease);
+            socket.off('refresh-release-status', handleRefreshReleaseStatus);
         };
-    }, []);
-
-    useEffect(() => {
-        refreshReleaseRequests().then();
     }, [refreshReleaseRequests]);
 
     useEffect(() => {
+        let isMounted = true;
+
+        refreshReleaseRequests().then(() => {
+            // Initial load complete
+        }).catch((error) => {
+            if (isMounted) {
+                console.error('Error loading initial release requests:', error);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [refreshReleaseRequests]);
+
+    useEffect(() => {
+        let isMounted = true;
+
         const intervalId = setInterval(() => {
+            if (!isMounted) return;
+
             setReleaseRequests((prev) => {
                 if (! prev) return prev;
                 return prev.filter((rr) => {
                     const shouldKeep = shouldKeepReleaseRequest(rr);
                     if (!shouldKeep) {
-                        deleteReleaseRequest(rr.id).then();
+                        deleteReleaseRequest(rr.id).catch((error) => {
+                            console.error('Error deleting expired release request:', error);
+                        });
                     }
                     return shouldKeep;
                 });
             });
         }, 1000 * 10);
 
-        return () => clearInterval(intervalId);
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
     }, []);
 
     const deleteAll = async (past: boolean) => {
-        deleteReleaseRequests(past).then(() => {
+        try {
+            await deleteReleaseRequests(past);
             socket.emit('delete-release-request');
-            refreshReleaseRequests();
-        });
+            await refreshReleaseRequests();
+        } catch (error) {
+            console.error('Error deleting release requests:', error);
+            toast.error('Failed to delete release requests');
+        }
     }
 
     const requestGroupedByDestination = releaseRequests?. reduce((acc, curr) => {

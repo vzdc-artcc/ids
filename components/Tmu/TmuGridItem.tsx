@@ -11,14 +11,32 @@ export default function TmuGridItem({facility, big}: { facility: Facility, big?:
     const [broadcasts, setBroadcasts] = useState<TmuNotice[]>();
 
     useEffect(() => {
-        fetchSingleTmu(facility).then(setBroadcasts);
-        socket.on(`${facility.id}-tmu`, () => {
-            fetchSingleTmu(facility).then(setBroadcasts);
-            toast.info(`${facility.id} TMU broadcasts have been updated.`);
+        let isMounted = true;
+
+        fetchSingleTmu(facility).then((data) => {
+            if (isMounted) {
+                setBroadcasts(data);
+            }
+        }).catch((error) => {
+            console.error('Error fetching TMU data:', error);
         });
 
+        const handleTmuUpdate = () => {
+            fetchSingleTmu(facility).then((data) => {
+                if (isMounted) {
+                    setBroadcasts(data);
+                    toast.info(`${facility.id} TMU broadcasts have been updated.`);
+                }
+            }).catch((error) => {
+                console.error('Error fetching TMU data:', error);
+            });
+        };
+
+        socket.on(`${facility.id}-tmu`, handleTmuUpdate);
+
         return () => {
-            socket.off(`${facility.id}-tmu`);
+            isMounted = false;
+            socket.off(`${facility.id}-tmu`, handleTmuUpdate);
         };
     }, [facility]);
 

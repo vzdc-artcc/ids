@@ -50,11 +50,41 @@ export async function GET() {
 
     const airspaceImages = zip.folder("airspace-images");
 
-    for (const diagram of airspaceDiagrams) {
-        const res = await fetch(`https://utfs.io/f/${diagram.key}`);
-        const imageData = await res.arrayBuffer();
+    // Process images in smaller batches to avoid memory exhaustion
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < airspaceDiagrams.length; i += BATCH_SIZE) {
+        const batch = airspaceDiagrams.slice(i, i + BATCH_SIZE);
 
-        airspaceImages?.file(`${diagram.id}.png`, imageData);
+        // Process batch in parallel but limit concurrent requests
+        await Promise.all(
+            batch.map(async (diagram) => {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+                    const res = await fetch(`https://utfs.io/f/${diagram.key}`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!res.ok) {
+                        console.error(`Failed to fetch diagram ${diagram.id}: ${res.statusText}`);
+                        return;
+                    }
+
+                    const imageData = await res.arrayBuffer();
+                    airspaceImages?.file(`${diagram.id}.png`, imageData);
+                } catch (error) {
+                    console.error(`Error fetching diagram ${diagram.id}:`, error);
+                    // Continue processing other diagrams even if one fails
+                }
+            })
+        );
+
+        // Allow garbage collection between batches
+        if (i + BATCH_SIZE < airspaceDiagrams.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
     }
 
     await log("CREATE", "EXPORT", "Config zip created successfully");

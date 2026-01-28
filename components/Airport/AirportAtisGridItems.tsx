@@ -40,7 +40,9 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
 
         const handleVatsimData = (data: any) => {
             if (!disableOnlineInformation) {
-                fetchMetar(airportIcao).then(setMetar);
+                fetchMetar(airportIcao).then(setMetar).catch((error) => {
+                    console.error('Error fetching METAR:', error);
+                });
                 const atis = (data.atis as {
                     atis_code: string,
                     callsign: string,
@@ -100,16 +102,33 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
     }, [airportIcao, free, disableOnlineInformation]);
 
     useEffect(() => {
+        let isMounted = true;
+
         if (!free && !disableOnlineInformation) {
-            fetchMetar(airportIcao).then(setMetar);
+            fetchMetar(airportIcao).then((metar) => {
+                if (isMounted) {
+                    setMetar(metar);
+                }
+            }).catch((error) => {
+                if (isMounted) {
+                    console.error('Error fetching METAR:', error);
+                }
+            });
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [airportIcao, free, disableOnlineInformation]);
 
     const {wind, altimeter} = getWindAndAltimeter(metar || '');
 
     const handleAirportIcaoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setairportIcao(e.target.value.toUpperCase());
-        fetchMetar(e.target.value.toUpperCase()).then(setMetar);
+        const newIcao = e.target.value.toUpperCase();
+        setairportIcao(newIcao);
+        fetchMetar(newIcao).then(setMetar).catch((error) => {
+            console.error('Error fetching METAR:', error);
+        });
     }
 
     if (small) {

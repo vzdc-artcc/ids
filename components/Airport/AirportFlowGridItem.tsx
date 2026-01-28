@@ -15,14 +15,21 @@ export default function AirportFlowGridItem({airport, runways, small}: {
     const [arrivalRunways, setArrivalRunways] = useState<AirportRunway[]>(runways.filter(runway => runway.inUseApproachTypes.length > 0));
 
     useEffect(() => {
-        socket.on(`${airport.facilityId}-flow`, (data: AirportRunway[]) => {
-            setDepartureRunways(data.filter(runway => runway.inUseDepartureTypes.length > 0));
-            setArrivalRunways(data.filter(runway => runway.inUseApproachTypes.length > 0));
-            toast.info(`${airport.icao} flow has been updated.`);
-        });
+        let isMounted = true;
+
+        const handleFlowUpdate = (data: AirportRunway[]) => {
+            if (isMounted) {
+                setDepartureRunways(data.filter(runway => runway.inUseDepartureTypes.length > 0));
+                setArrivalRunways(data.filter(runway => runway.inUseApproachTypes.length > 0));
+                toast.info(`${airport.icao} flow has been updated.`);
+            }
+        };
+
+        socket.on(`${airport.facilityId}-flow`, handleFlowUpdate);
 
         return () => {
-            socket.off(`${airport.facilityId}-flow`)
+            isMounted = false;
+            socket.off(`${airport.facilityId}-flow`, handleFlowUpdate);
         };
     }, [airport]);
 
