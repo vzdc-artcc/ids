@@ -27,29 +27,47 @@ export default function SuaRequestInformation({disabled}: { disabled?: boolean }
     const [activeSuas, setActiveSua] = useState<string[]>([]);
 
     useEffect(() => {
-        socket.on("sua-activate", (id:  string) => {
+        let isMounted = true;
+
+        const handleSuaActivate = (id: string) => {
+            if (!isMounted) return;
             setActiveSua((prev) => [...prev, id]);
-        });
-        socket.on("sua-deactivate", (id: string) => {
+        };
+
+        const handleSuaDeactivate = (id: string) => {
+            if (!isMounted) return;
             setActiveSua((prev) => prev.filter((suaId) => suaId !== id));
-        });
+        };
+
+        socket.on("sua-activate", handleSuaActivate);
+        socket.on("sua-deactivate", handleSuaDeactivate);
 
         return () => {
-            socket.off("sua-activate");
-            socket.off("sua-deactivate");
+            isMounted = false;
+            socket.off("sua-activate", handleSuaActivate);
+            socket.off("sua-deactivate", handleSuaDeactivate);
         };
     }, []);
 
     useEffect(() => {
         if (disabled) return;
 
-        fetchSuaRequests().then(setSuaRequests);
+        let isMounted = true;
+
+        fetchSuaRequests().then((data) => {
+            if (isMounted) setSuaRequests(data);
+        });
 
         const intervalId = setInterval(() => {
-            fetchSuaRequests().then(setSuaRequests);
+            fetchSuaRequests().then((data) => {
+                if (isMounted) setSuaRequests(data);
+            });
         }, 30000);
 
-        return () => clearInterval(intervalId);
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
     }, [disabled]);
 
     const toggleActiveSuaRequest = (id: string) => {

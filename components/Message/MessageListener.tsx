@@ -9,31 +9,22 @@ export default function MessageListener({ facility, cid }: { facility: string, c
     const [message, setMessage] = useState<string>();
 
     useEffect(() => {
-        socket.on(`msg-${facility}`, (msg) => {
+        let isMounted = true;
+        const currentEvents = [`msg-${facility}`, `msg-${cid}`, 'msg-*'];
+
+        const handleMessage = (msg: string) => {
+            if (!isMounted) return;
             setMessage(msg);
             setOpen(true);
-
             playNewMessage().then();
-        });
-        socket.on(`msg-${cid}`, (msg) => {
-            setMessage(msg);
-            setOpen(true);
+        };
 
-            playNewMessage().then();
-        });
-
-        socket.on('msg-*', (msg) => {
-            setMessage(msg);
-            setOpen(true);
-
-            playNewMessage().then();
-        });
+        currentEvents.forEach(eventName => socket.on(eventName, handleMessage));
 
         return () => {
-            socket.off(`msg-${facility}`);
-            socket.off(`msg-${cid}`);
-            socket.off('msg-*');
-        }
+            isMounted = false;
+            currentEvents.forEach(eventName => socket.off(eventName, handleMessage));
+        };
     }, [cid, facility]);
 
     const playNewMessage = async () => {

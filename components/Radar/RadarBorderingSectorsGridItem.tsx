@@ -18,15 +18,25 @@ export default function RadarBorderingSectorsGridItem({user, radar}: { user: Use
     const [borderingSectors, setBorderingSectors] = useState<BorderingSector[] | undefined | null>();
 
     useEffect(() => {
-        fetchBorderingSectors(user, radar).then(setBorderingSectors);
+        let isMounted = true;
 
-        socket.on('radar-consolidation', () => {
-            fetchBorderingSectors(user, radar).then(setBorderingSectors);
-            toast.info('Radar consolidations have been updated.  This may or may not include your sectors or bordering sectors.');
+        fetchBorderingSectors(user, radar).then((data) => {
+            if (isMounted) setBorderingSectors(data);
         });
 
+        const handleRadarConsolidation = () => {
+            if (!isMounted) return;
+            fetchBorderingSectors(user, radar).then((data) => {
+                if (isMounted) setBorderingSectors(data);
+            });
+            toast.info('Radar consolidations have been updated.  This may or may not include your sectors or bordering sectors.');
+        };
+
+        socket.on('radar-consolidation', handleRadarConsolidation);
+
         return () => {
-            socket.off('radar-consolidation');
+            isMounted = false;
+            socket.off('radar-consolidation', handleRadarConsolidation);
         };
     }, [radar, user]);
 

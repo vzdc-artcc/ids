@@ -17,36 +17,50 @@ export default function AirportRadarInformation({icao, radars, disableOnlineInfo
     const [radarConsolidations, setRadarConsolidations] = useState<SectorStatus[]>();
 
     useEffect(() => {
+        let isMounted = true;
 
-        getAirportRelatedConsolidations(icao).then(setRadarConsolidations);
-        socket.on('radar-consolidation', () => {
-            getAirportRelatedConsolidations(icao).then(setRadarConsolidations);
-            toast.info('Radar consolidations updated');
+        getAirportRelatedConsolidations(icao).then((data) => {
+            if (isMounted) setRadarConsolidations(data);
         });
 
-        if (!disableOnlineInformation) {
-            socket.on('vatsim-data', (data) => {
-                setOnlineAtc((data.controllers as {
-                    callsign: string,
-                    frequency: string,
-                    facility: number,
-                }[])
-                    .filter((c) => radars.some((r) => r.atcPrefixes.some((prefix) => c.callsign.startsWith(prefix))))
-                    .filter((c) => c.facility > 4)
-                    .sort((a, b) => a.callsign.localeCompare(b.callsign))
-                    .sort((a, b) => a.facility - b.facility)
-                    .map((controller) => ({
-                        position: controller.callsign,
-                        frequency: controller.frequency,
-                        facility: controller.facility,
-                    })));
+        const handleRadarConsolidation = () => {
+            if (!isMounted) return;
+            getAirportRelatedConsolidations(icao).then((data) => {
+                if (isMounted) setRadarConsolidations(data);
             });
+            toast.info('Radar consolidations updated');
+        };
+
+        const handleVatsimData = (data: any) => {
+            if (!isMounted) return;
+            setOnlineAtc((data.controllers as {
+                callsign: string,
+                frequency: string,
+                facility: number,
+            }[])
+                .filter((c) => radars.some((r) => r.atcPrefixes.some((prefix) => c.callsign.startsWith(prefix))))
+                .filter((c) => c.facility > 4)
+                .sort((a, b) => a.callsign.localeCompare(b.callsign))
+                .sort((a, b) => a.facility - b.facility)
+                .map((controller) => ({
+                    position: controller.callsign,
+                    frequency: controller.frequency,
+                    facility: controller.facility,
+                })));
+        };
+
+        socket.on('radar-consolidation', handleRadarConsolidation);
+
+        if (!disableOnlineInformation) {
+            socket.on('vatsim-data', handleVatsimData);
         }
+
         return () => {
+            isMounted = false;
+            socket.off('radar-consolidation', handleRadarConsolidation);
             if (!disableOnlineInformation) {
-                socket.off('vatsim-data');
+                socket.off('vatsim-data', handleVatsimData);
             }
-            socket.off('radar-consolidation');
         };
     }, [radars, icao, disableOnlineInformation]);
 

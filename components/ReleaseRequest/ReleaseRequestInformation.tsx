@@ -65,44 +65,69 @@ export default function ReleaseRequestInformation({ facility, cid }: { facility:
     }, []);
 
     useEffect(() => {
+        let isMounted = true;
+
         const handleNewRelease = () => {
-            fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
+            if (!isMounted) return;
+            fetchReleaseRequestsFiltered(cid, facility).then((data) => {
+                if (isMounted) setReleaseRequestsWithStatus(data);
+            });
         };
 
-        const handleRefreshRelease = (rr: any, notification: boolean) => {
-            if (rr.startedBy. cid !== cid && rr.initFacility !== facility) return;
+        const handleRefreshReleaseWithNotification = (rr: any) => {
+            if (!isMounted) return;
+            if (rr.startedBy.cid !== cid && rr.initFacility !== facility) return;
 
-            fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
+            fetchReleaseRequestsFiltered(cid, facility).then((data) => {
+                if (isMounted) setReleaseRequestsWithStatus(data);
+            });
 
-            if (notification) {
-                toast.info(`Release time for ${rr.callsign} updated to ${rr.released ? (rr.releaseTime ?  formatZuluDate(rr.releaseTime as Date, true) : 'ANY') : 'NONE'}. `, {
-                    autoClose: 60 * 1000,
-                    closeOnClick: true,
-                    theme: "colored",
-                });
-                playNewReleaseTime().then();
-            }
+            toast.info(`Release time for ${rr.callsign} updated to ${rr.released ? (rr.releaseTime ?  formatZuluDate(rr.releaseTime as Date, true) : 'ANY') : 'NONE'}. `, {
+                autoClose: 60 * 1000,
+                closeOnClick: true,
+                theme: "colored",
+            });
+            playNewReleaseTime().then();
+        };
+
+        const handleRefreshReleaseStatusOnly = (rr: any) => {
+            if (!isMounted) return;
+            if (rr.startedBy.cid !== cid && rr.initFacility !== facility) return;
+
+            fetchReleaseRequestsFiltered(cid, facility).then((data) => {
+                if (isMounted) setReleaseRequestsWithStatus(data);
+            });
         };
 
         const handleDeleteRelease = () => {
-            fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
+            if (!isMounted) return;
+            fetchReleaseRequestsFiltered(cid, facility).then((data) => {
+                if (isMounted) setReleaseRequestsWithStatus(data);
+            });
         };
 
         socket.on('new-release-request', handleNewRelease);
-        socket.on('refresh-release', (r) => handleRefreshRelease(r, true));
-        socket.on('refresh-release-status', (r) => handleRefreshRelease(r, false));
+        socket.on('refresh-release', handleRefreshReleaseWithNotification);
+        socket.on('refresh-release-status', handleRefreshReleaseStatusOnly);
         socket.on('delete-release-request', handleDeleteRelease);
 
         return () => {
+            isMounted = false;
             socket.off('new-release-request', handleNewRelease);
-            socket.off('refresh-release', (r) => handleRefreshRelease(r, true));
-            socket.off('refresh-release-status', (r) => handleRefreshRelease(r, false));
+            socket.off('refresh-release', handleRefreshReleaseWithNotification);
+            socket.off('refresh-release-status', handleRefreshReleaseStatusOnly);
             socket.off('delete-release-request', handleDeleteRelease);
         };
     }, [cid, facility, setReleaseRequestsWithStatus]);
 
     useEffect(() => {
-        fetchReleaseRequestsFiltered(cid, facility).then(setReleaseRequestsWithStatus);
+        let isMounted = true;
+        fetchReleaseRequestsFiltered(cid, facility).then((data) => {
+            if (isMounted) setReleaseRequestsWithStatus(data);
+        });
+        return () => {
+            isMounted = false;
+        };
     }, [cid, facility, setReleaseRequestsWithStatus]);
 
     useEffect(() => {
