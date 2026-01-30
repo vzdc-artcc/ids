@@ -24,7 +24,10 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
     const [metar, setMetar] = useState<string>();
 
     useEffect(() => {
+        let isMounted = true;
+
         const handleAtis = (data: AtisUpdate) => {
+            if (!isMounted) return;
             switch (data.atisType) {
                 case 'combined':
                     setCombinedAtis(data);
@@ -39,9 +42,16 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         };
 
         const handleVatsimData = (data: any) => {
+            if (!isMounted) return;
             if (!disableOnlineInformation) {
-                fetchMetar(airportIcao).then(setMetar).catch((error) => {
-                    console.error('Error fetching METAR:', error);
+                fetchMetar(airportIcao).then((metar) => {
+                    if (isMounted) {
+                        setMetar(metar);
+                    }
+                }).catch((error) => {
+                    if (isMounted) {
+                        console.error('Error fetching METAR:', error);
+                    }
                 });
                 const atis = (data.atis as {
                     atis_code: string,
@@ -81,6 +91,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         }
 
         const handleVatisIntegration = (enabled: boolean) => {
+            if (!isMounted) return;
             if (!disableOnlineInformation) {
                 setAtisDisabled(!enabled);
                 toast.warning(`ATIS Mode changed for ${airportIcao}`);
@@ -95,6 +106,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         socket.on(`${airportIcao}-vatis-integration`, handleVatisIntegration);
 
         return () => {
+            isMounted = false;
             socket.off(`${airportIcao}-vatis-integration`, handleVatisIntegration);
             socket.off('vatsim-data', handleVatsimData);
             socket.off(`${airportIcao}-atis`, handleAtis);
