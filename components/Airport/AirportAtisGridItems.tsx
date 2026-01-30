@@ -108,8 +108,10 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
         return () => {
             isMounted = false;
             socket.off(`${airportIcao}-vatis-integration`, handleVatisIntegration);
-            socket.off('vatsim-data', handleVatsimData);
-            socket.off(`${airportIcao}-atis`, handleAtis);
+            if (!free) {
+                socket.off('vatsim-data', handleVatsimData);
+                socket.off(`${airportIcao}-atis`, handleAtis);
+            }
         };
     }, [airportIcao, free, disableOnlineInformation]);
 
