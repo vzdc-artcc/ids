@@ -57,23 +57,11 @@ jobs:
       - name: Run npm install
         run: npm ci
 
-      - name: Delete dist and .next directories if they exist
-        run: |
-          rm -rf dist .next
-
-      - name: Remove distDir property if it exists
-        run: |
-          sed -i "/distDir: 'dist',/d" next.config.ts
-
       - name: Rename .env.public to .env
         run: mv .env.public .env
 
       - name: Run npm build
         run: npm run build
-
-      - name: Modify next.config.ts to add distDir property
-        run: |
-          sed -i "/const nextConfig: NextConfig = {/a \ \ \ \ distDir: 'dist'," next.config.ts
 
       - name: Login to GCR
         uses: docker/login-action@v2
