@@ -13,7 +13,7 @@ export default function ReleaseWindow({ facilityId, onSubmit }: { facilityId: st
     const [aircraftType, setAircraftType] = useState('J');
 
     const handleSubmit = async (formData: FormData) => {
-        const { request, errors }  = await createReleaseRequest(facilityId || formData.get('origin') as string, formData);
+        const { request, errors }  = await createReleaseRequest(formData.get('origin') as string || facilityId, formData);
 
         if (errors) {
             toast.error(errors.map(e => e.message).join('\n'));
