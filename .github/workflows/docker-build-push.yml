@@ -1,0 +1,121 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master
+      - next
+      - training
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Extract commit hash
+        id: commit_hash
+        run: |
+          COMMIT_HASH=${GITHUB_SHA::7}  # Get the first 7 characters of the commit hash
+          echo "COMMIT_HASH=${COMMIT_HASH,,}" >> $GITHUB_ENV  # Convert to lowercase
+
+      - name: Check for localhost in NEXT_PUBLIC_ variables
+        run: |
+          for var in $(printenv | grep '^NEXT_PUBLIC_' | cut -d= -f1); do
+            value=$(printenv $var)
+            if [[ "$value" == *"localhost"* ]]; then
+              echo "ERROR: $var contains 'localhost'. This is not allowed."
+              exit 1
+            fi
+          done
+
+      - name: Set version number
+        run: |
+          if [ -f "package.json" ]; then
+            VERSION=v$(node -p "require('./package.json').version")-${{ steps.extract_branch.outputs.branch }}.${{ env.COMMIT_HASH }}
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+            npm version "${VERSION}" --no-git-tag-version --allow-same-version
+          else
+            echo "package.json not found!"
+            exit 1
+          fi
+
+      - name: Install dependencies for sharp
+        run: |
+          npm install --cpu=x64 --os=linux --libc=glibc sharp --legacy-peer-deps
+
+      - name: Run npm install
+        run: npm ci --legacy-peer-deps
+
+      - name: Delete dist and .next directories if they exist
+        run: |
+          rm -rf dist .next
+
+      - name: Remove distDir property if it exists
+        run: |
+          sed -i "/distDir: 'dist',/d" next.config.ts
+
+      - name: Rename .env.public to .env
+        run: mv .env.public .env
+
+      - name: Run npm build
+        run: npm run build
+
+      - name: Modify next.config.ts to add distDir property
+        run: |
+          sed -i "/const nextConfig: NextConfig = {/a \ \ \ \ distDir: 'dist'," next.config.ts
+
+      - name: Login to GCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.extract_branch.outputs.branch }}-latest
+            ghcr.io/${{ github.repository }}:${{ steps.extract_branch.outputs.branch }}-${{ env.COMMIT_HASH }}
+
+      - name: Install doctl
+        run: |
+          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.113.0/doctl-1.113.0-linux-amd64.tar.gz \
+          | tar -xzv
+          sudo mv doctl /usr/local/bin
+
+      - name: Authenticate with DigitalOcean
+        run: doctl auth init -t ${{ secrets.DO_PAT }}
+
+      - name: Fetch kubeconfig for cluster
+        env:
+          CLUSTER_ID: ${{ secrets.DO_CLUSTER_ID }}
+        run: doctl kubernetes cluster kubeconfig save "$CLUSTER_ID" --set-current-context
+          
+      - name: Update Kubernetes Deployment (MASTER)
+        if: ${{ steps.extract_branch.outputs.branch == 'master' }}
+        env:
+          IMAGE_TAG: ghcr.io/${{ github.repository }}:master-${{ env.COMMIT_HASH }}
+        run: |
+          kubectl set image deployment/training-ids ids=$IMAGE_TAG -n default
+
+      - name: Update Kubernetes Deployment (TRAINING)
+        if: ${{ steps.extract_branch.outputs.branch == 'training' }}
+        env:
+          IMAGE_TAG: ghcr.io/${{ github.repository }}:training-${{ env.COMMIT_HASH }}
+        run: |
+           kubectl set image deployment/training-ids ids=$IMAGE_TAG -n default

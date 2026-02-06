@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  cid    String
+  rating Int
+
+  firstName String?
+  lastName  String?
+  fullName  String?
+
+  artcc    String
+  division String
+
+  logs                   Log[]
+  consolidations         RadarConsolidation[]
+  releaseRequestsCreated ReleaseRequest[]     @relation("startedBy")
+  ReleaseRequest         ReleaseRequest[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model TmuNotice {
+  id                    String     @id @default(cuid())
+  message               String
+  broadcastedFacilities Facility[]
+  order                 Int        @default(0)
+}
+
+model Facility {
+  id               String      @id @default(cuid())
+  order            Int         @default(0)
+  hiddenFromPicker Boolean     @default(false)
+  airport          Airport?
+  radar            Radar?
+  tmuNotices       TmuNotice[]
+}
+
+model Airport {
+  id               String            @id @default(cuid())
+  icao             String            @unique
+  iata             String            @unique
+  facility         Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  facilityId       String            @unique
+  localSplit       String[]
+  notams           String[]
+  sopLink          String
+  runways          AirportRunway[]
+  airspaceDiagrams AirspaceDiagram[]
+
+  primaryRadar   Radar?  @relation("primaryRadar", fields: [primaryRadarId], references: [id])
+  primaryRadarId String?
+
+  radars  Radar[]      @relation("allRadars")
+  presets FlowPreset[]
+
+  disableAutoAtis Boolean @default(false)
+}
+
+model AirportRunway {
+  id                      String             @id @default(cuid())
+  runwayIdentifier        String
+  availableDepartureTypes String[]
+  availableApproachTypes  String[]
+  inUseDepartureTypes     String[]
+  inUseApproachTypes      String[]
+  airport                 Airport            @relation(fields: [airportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  airportId               String
+  flowPresetRunways       FlowPresetRunway[]
+}
+
+model FlowPreset {
+  id         String             @id @default(cuid())
+  presetName String
+  atisType   FlowPresetAtisType
+  airport    Airport            @relation(fields: [airportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  airportId  String
+  runways    FlowPresetRunway[]
+}
+
+enum FlowPresetAtisType {
+  COMBINED
+  DEPARTURE
+  ARRIVAL
+}
+
+model FlowPresetRunway {
+  id             String        @id @default(cuid())
+  flowPreset     FlowPreset    @relation(fields: [flowPresetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  flowPresetId   String
+  runway         AirportRunway @relation(fields: [runwayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  runwayId       String
+  departureTypes String[]
+  approachTypes  String[]
+}
+
+model Radar {
+  id                String   @id @default(cuid())
+  identifier        String   @unique
+  name              String
+  facility          Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  facilityId        String   @unique
+  atcPrefixes       String[]
+  radarSplit        String[]
+  notams            String[]
+  isEnrouteFacility Boolean
+
+  airportsPrimary Airport[] @relation("primaryRadar")
+
+  sopLink           String
+  connectedAirports Airport[]     @relation("allRadars")
+  sectors           RadarSector[]
+}
+
+model RadarSector {
+  id                          String                      @id @default(cuid())
+  identifier                  String
+  frequency                   String
+  open                        Boolean                     @default(false)
+  radar                       Radar                       @relation(fields: [radarId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  airspaceDiagrams            AirspaceDiagram[]
+  radarId                     String
+  sectorsThatBorderThisSector RadarSector[]               @relation("borderingSectors")
+  borderingSectors            RadarSector[]               @relation("borderingSectors")
+  primarySectors              RadarConsolidation?         @relation("primarySectors")
+  secondarySectors            RadarConsolidation[]        @relation("secondarySectors")
+  defaultPrimarySectors       DefaultRadarConsolidation[] @relation("defaultPrimarySectors")
+  defaultSecondarySectors     DefaultRadarConsolidation[] @relation("defaultSecondarySectors")
+  defaultRadarConsolidationId String?
+}
+
+model RadarConsolidation {
+  id               String        @id @default(cuid())
+  user             User          @relation(fields: [userId], references: [id])
+  userId           String
+  primarySector    RadarSector   @relation("primarySectors", fields: [primarySectorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  primarySectorId  String        @unique
+  secondarySectors RadarSector[] @relation("secondarySectors")
+}
+
+model DefaultRadarConsolidation {
+  id               String        @id @default(cuid())
+  name             String
+  primarySector    RadarSector   @relation("defaultPrimarySectors", fields: [primarySectorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  primarySectorId  String
+  secondarySectors RadarSector[] @relation("defaultSecondarySectors")
+}
+
+model AirspaceDiagram {
+  id        String       @id @default(cuid())
+  name      String
+  key       String
+  airport   Airport?     @relation(fields: [airportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  airportId String?
+  sector    RadarSector? @relation(fields: [sectorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sectorId  String?
+}
+
+enum LogType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum LogModel {
+  AIRPORT
+  AIRPORT_RUNWAY
+  FLOW_PRESET
+  FLOW_PRESET_RUNWAY
+  RADAR
+  RADAR_SECTOR
+  RADAR_CONSOLIDATION
+  DEFAULT_RADAR_CONSOLIDATION
+  AIRSPACE_DIAGRAM
+  TMU_NOTICE
+  IMPORT
+  EXPORT
+  FRONTEND_ARP_SET
+  FRONTEND_RDR_SET
+  FRONTEND_RDR_CONSOL
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  type      LogType
+  model     LogModel
+  message   String
+  timestamp DateTime
+  userId    String
+}
+
+model ReleaseRequest {
+  id           String   @id @default(cuid())
+  startedBy    User     @relation("startedBy", fields: [startedById], references: [id])
+  startedById  String
+  initTime     DateTime @default(now())
+  initFacility String
+  initState    String
+
+  callsign     String
+  origin       String
+  destination  String
+  aircraftType String?
+  freeText     String?
+
+  releaseTime DateTime?
+  released    Boolean   @default(false)
+  condition   String?
+  User        User?     @relation(fields: [userId], references: [id])
+  userId      String?
+}
