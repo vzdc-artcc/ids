@@ -52,10 +52,10 @@ jobs:
 
       - name: Install dependencies for sharp
         run: |
-          npm install --cpu=x64 --os=linux --libc=glibc sharp --legacy-peer-deps
+          npm install --cpu=x64 --os=linux --libc=glibc sharp
 
       - name: Run npm install
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Delete dist and .next directories if they exist
         run: |
@@ -111,7 +111,7 @@ jobs:
         env:
           IMAGE_TAG: ghcr.io/${{ github.repository }}:master-${{ env.COMMIT_HASH }}
         run: |
-          kubectl set image deployment/training-ids ids=$IMAGE_TAG -n default
+          kubectl set image deployment/ids ids=$IMAGE_TAG -n default
 
       - name: Update Kubernetes Deployment (TRAINING)
         if: ${{ steps.extract_branch.outputs.branch == 'training' }}
