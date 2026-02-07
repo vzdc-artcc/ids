@@ -269,7 +269,7 @@ const isReleaseRequestExpired = (rr: ReleaseRequestWithAll) => {
     switch (rr.condition) {
         case 'window':
             if (! rr.releaseTime) return false;
-            return (new Date()).getTime() > rr.releaseTime.getTime() + 1000 * 60 * 10;
+            return (new Date()).getTime() > rr.releaseTime.getTime() + 1000 * 60 * 2;
         case 'before':
             if (! rr.releaseTime) return false;
             return (new Date()).getTime() > rr.releaseTime.getTime();
