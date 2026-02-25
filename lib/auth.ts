@@ -64,7 +64,7 @@ export const auth = betterAuth({
                         if (!DEV_MODE) {
                             const res = await fetch(`https://api.vatusa.net/v2/user/${data.cid}?apikey=${VATUSA_API_KEY}`);
                             const userData = await res.json();
-                            if (userData.data.facility !== VATUSA_FACILITY && !userData.data.visiting_facilities.map((f: {facility: string}) => f.facility).includes(VATUSA_FACILITY)) {
+                            if (userData.data.facility !== VATUSA_FACILITY && !userData.data.visits.map((f: {facility: string}) => f.facility).includes(VATUSA_FACILITY)) {
                                 throw new Error('User is not a member of the ARTCC.');
                             }
                         }
