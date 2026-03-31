@@ -172,18 +172,15 @@ export default function ConflictProbingMap({alerts, nonAlerts, config, mapOption
                 >
                     <Box
                         sx={{
-                            color: 'hotpink',
-                            fontSize: 15,
+                            color: 'red',
+                            fontSize: 10,
                             whiteSpace: 'nowrap',
                             pointerEvents: 'none',
                             userSelect: 'none',
+                            fontWeight: 'bold',
                         }}
                     >
-                        &copy; {new Date().getFullYear()} Virtual Washington ARTCC (vzdc.org). All rights reserved.
-                        <br/>
-                        Created by <b>Aneesh Reddy</b> and <b>Christos Savvopoulos</b>.
-                        <br/>
-                        <span style={{color: 'red',}}><b>FOR VATSIM USE ONLY</b></span>
+                        VATSIM
                     </Box>
                 </Marker>
             </Map>

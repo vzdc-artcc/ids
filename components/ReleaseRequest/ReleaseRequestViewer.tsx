@@ -213,7 +213,7 @@ export default function ReleaseRequestViewer() {
                                         <Typography>{formatZuluDate(releaseRequest.initTime, true)}</Typography>
                                     </Grid>
                                     <Grid size={2}>
-                                        { releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">{getSingleLetterCondition(releaseRequest.condition)} {formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
+                                        { releaseRequest.releaseTime && <Typography color={isReleaseRequestExpired(releaseRequest) ? 'red' : 'limegreen'} fontWeight="bold">{getSingleLetterCondition(releaseRequest.condition)} {formatZuluDate(releaseRequest.releaseTime, true)}</Typography> }
                                         { releaseRequest.released && !releaseRequest.releaseTime && <Typography color="limegreen" fontWeight="bold">ANY</Typography> }
                                     </Grid>
                                     <Grid size={2}>
@@ -262,5 +262,18 @@ const getSingleLetterCondition = (condition?: string | null) => {
             return 'A';
         default:
             return '';
+    }
+}
+
+const isReleaseRequestExpired = (rr: ReleaseRequestWithAll) => {
+    switch (rr.condition) {
+        case 'window':
+            if (! rr.releaseTime) return false;
+            return (new Date()).getTime() > rr.releaseTime.getTime() + 1000 * 60 * 2;
+        case 'before':
+            if (! rr.releaseTime) return false;
+            return (new Date()).getTime() > rr.releaseTime.getTime();
+        default:
+            return false;
     }
 }

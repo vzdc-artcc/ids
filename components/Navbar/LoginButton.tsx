@@ -14,7 +14,6 @@ const authClient = createAuthClient({
 
 function LoginButton() {
     const pathname = usePathname();
-    const router = useRouter();
     const session = authClient.useSession();
 
     if (session.data) {
