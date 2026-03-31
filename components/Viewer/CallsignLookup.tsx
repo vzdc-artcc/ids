@@ -10,7 +10,7 @@ export default function CallsignLookup() {
     const [result, setResult] = useState<CallsignData>();
 
     useEffect(() => {
-        if (callsign) {
+        if (callsign && callsign.length === 3) {
             getCallsign(callsign).then(setResult);
         }
     }, [callsign]);
