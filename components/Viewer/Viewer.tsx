@@ -50,7 +50,7 @@ function ViewerPanel({index, size}: { index: number, size: number }) {
 
 export default function Viewer() {
     return (
-        <Grid container size={12}>
+        <Grid container size={12} sx={{mb: 4,}}>
             {Array.from({length: VIEWER_COUNT}, (_, i) => (
                 <ViewerPanel key={i + 1} index={i + 1} size={VIEWER_COUNT > 2 ? 6 : 12 / i}/>
             ))}
