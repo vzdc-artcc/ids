@@ -6,17 +6,11 @@ import {Box, Card, CardContent, CircularProgress, Grid, Typography} from "@mui/m
 import ConflictProbingMapConfig from "@/components/ConflictProbing/ConflictProbingMapConfig";
 import AlertsWindow from "@/components/ConflictProbing/AlertsWindow";
 import ConflictProbingConfig from "@/components/ConflictProbing/ConflictProbingConfig";
+import {fetchConflictProbingConfig, fetchConflictProbingData} from "@/actions/conflictProbing";
 
 export default function ConflictProbingInformation({ alertsOnly }: { alertsOnly?: boolean }) {
-    const [config, setConfig] = useState<ConflictProbingConfigResponse>({
-        BOTTOM_LEFT_LIMIT: [33.5, -82.5],
-        TOP_RIGHT_LIMIT: [41, -71.5]
-    });
-    const [data, setData] = useState<ConflictProbingResponse>({
-        alerts: [],
-        non_alerts: [],
-        timestamp: 0,
-    });
+    const [config, setConfig] = useState<ConflictProbingConfigResponse>();
+    const [data, setData] = useState<ConflictProbingResponse>();
     const [mapOptions, setMapOptions] = useState<MapOptions>({
         showAlertsOnly: false,
         showPredictions: false,
@@ -29,10 +23,10 @@ export default function ConflictProbingInformation({ alertsOnly }: { alertsOnly?
     });
 
     useEffect(() => {
-        // fetchConflictProbingConfig().then(setConfig).catch(console.error);
+        fetchConflictProbingConfig().then(setConfig).catch(console.error);
 
         const dataInterval = setInterval(() => {
-            // fetchConflictProbingData().then(setData).catch(console.error);
+            fetchConflictProbingData().then(setData).catch(console.error);
         }, 5000);
 
         return () => {
@@ -41,7 +35,7 @@ export default function ConflictProbingInformation({ alertsOnly }: { alertsOnly?
     }, []);
 
     useEffect(() => {
-        // fetchConflictProbingData().then(setData).catch(console.error);
+        fetchConflictProbingData().then(setData).catch(console.error);
     }, []);
 
     if (!alertsOnly && (!config || !data)) {
