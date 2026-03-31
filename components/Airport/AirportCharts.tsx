@@ -1,8 +1,8 @@
 'use client';
 import React, {useEffect} from 'react';
-import {Box, Button, ButtonGroup, CircularProgress, Typography} from "@mui/material";
+import {Box, Button, ButtonGroup, CircularProgress} from "@mui/material";
 import {fetchCharts} from "@/actions/charts";
-import {usePathname, useRouter} from "next/navigation";
+import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {toast} from "react-toastify";
 
 export default function AirportCharts({icao}: { icao: string, }) {
@@ -10,6 +10,8 @@ export default function AirportCharts({icao}: { icao: string, }) {
     const [charts, setCharts] = React.useState<Record<string, { name: string, url: string,}[]>>();
     const router = useRouter();
     const pathName = usePathname();
+    const searchParams = useSearchParams();
+    const tv = searchParams.get('tv') || '1';
 
     useEffect(() => {
         setCharts(undefined);
@@ -39,12 +41,11 @@ export default function AirportCharts({icao}: { icao: string, }) {
     }, [icao]);
 
     const navigateToChart = (url: string) => {
-        const search = new URLSearchParams({
-            viewer: 'url',
-            url,
-        });
-        router.push(`${pathName}?${search.toString()}#viewer`, {
-            scroll: true,
+        const current = new URLSearchParams(searchParams.toString());
+        current.set(`viewer${tv}`, 'url');
+        current.set(`url${tv}`, url);
+        router.push(`${pathName}?${current.toString()}#${tv === '1' ? 'viewer' : `viewer${tv}`}`, {
+            scroll: false,
         });
     };
 
