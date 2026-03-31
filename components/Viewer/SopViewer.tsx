@@ -31,18 +31,19 @@ export default function SopViewer({defaultFacility}: { defaultFacility?: string,
 
     return (
         <>
-            <Card sx={{mb: 4, mx: 2,}}>
+            <Card sx={{mx: 1,}}>
                 <CardContent>
                     <Autocomplete
+                        size="small"
                         options={facilities || []}
                         getOptionLabel={(option) => option.id}
                         value={selectedFacility}
                         onChange={(event, newValue) => setSelectedFacility(newValue)}
-                        renderInput={(params) => <TextField {...params} label="Select Facility" variant="outlined"/>}
+                        renderInput={(params) => <TextField {...params} label="Facility" variant="outlined"/>}
                     />
                 </CardContent>
             </Card>
-            <Divider style={{margin: '20px',}}/>
+            <Divider sx={{my: 1,}}/>
             {sopLink && <UrlViewer url={sopLink}/>}
         </>
 

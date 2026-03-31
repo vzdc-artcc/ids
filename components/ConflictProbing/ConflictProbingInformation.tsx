@@ -2,11 +2,11 @@
 import React, {useEffect, useState} from 'react';
 import {ConflictProbingConfigResponse, ConflictProbingResponse} from "@/types/conflict-probing";
 import ConflictProbingMap, {MapOptions} from "@/components/ConflictProbing/ConflictProbingMap";
-import {fetchConflictProbingConfig, fetchConflictProbingData} from "@/actions/conflictProbing";
 import {Box, Card, CardContent, CircularProgress, Grid, Typography} from "@mui/material";
 import ConflictProbingMapConfig from "@/components/ConflictProbing/ConflictProbingMapConfig";
 import AlertsWindow from "@/components/ConflictProbing/AlertsWindow";
 import ConflictProbingConfig from "@/components/ConflictProbing/ConflictProbingConfig";
+import {fetchConflictProbingConfig, fetchConflictProbingData} from "@/actions/conflictProbing";
 
 export default function ConflictProbingInformation({ alertsOnly }: { alertsOnly?: boolean }) {
     const [config, setConfig] = useState<ConflictProbingConfigResponse>();
@@ -57,11 +57,13 @@ export default function ConflictProbingInformation({ alertsOnly }: { alertsOnly?
     }
 
     return data && config && (
-        <Box>
-            <Box sx={{positive: 'relative', width: '100%', height: '60vh',}}>
+        <Box sx={{position: 'relative'}}>
+            <Box sx={{height: '60vh',}}>
                 <ConflictProbingMap alerts={data.alerts} nonAlerts={data.non_alerts} config={config}
                                     mapOptions={mapOptions}/>
             </Box>
+            <Typography variant="caption">&copy; {new Date().getFullYear()} Virtual Washington ARTCC (vzdc.org). All
+                rights reserved.</Typography>
             <Grid container columns={2} spacing={2} sx={{mt: 2,}}>
                 <Grid size={1}>
                     <ConflictProbingMapConfig config={mapOptions} onChange={setMapOptions}/>
