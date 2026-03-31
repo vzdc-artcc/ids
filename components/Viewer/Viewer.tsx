@@ -14,6 +14,7 @@ import RadarSettings from "@/components/Viewer/RadarSettings";
 import Consolidation from "@/components/Viewer/Consolidation";
 import ReleaseWindow from "@/components/Viewer/ReleaseWindow";
 import ConflictProbing from "@/components/Viewer/ConflictProbing";
+import CallsignLookup from "@/components/Viewer/CallsignLookup";
 
 const VIEWER_COUNT = 4;
 
@@ -36,6 +37,7 @@ function ViewerPanel({index, size}: { index: number, size: number }) {
                 {display === 'wx' && <Weather/>}
                 {display === 'sop' && <SopViewer defaultFacility={facility || undefined}/>}
                 {display === 'prd' && <PreferredRoutes startAirport={prdStartAirport || undefined}/>}
+                {display === 'cs' && <CallsignLookup/>}
                 {display === 'airspace' && <Airspace/>}
                 {display === 'set-airport' && <AirportSettings/>}
                 {display === 'set-radar' && <RadarSettings/>}

@@ -82,6 +82,10 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                       scroll={false}>
                     <Button color="success">PRD</Button>
                 </Link>
+                <Link href={redirectToViewer('cs')}
+                      scroll={false}>
+                    <Button color="success">C/S</Button>
+                </Link>
                 <Link scroll={false}
                     href={redirectToViewer('sop', new URLSearchParams({facility: airport?.facilityId || radar?.facilityId || '',}))}>
                     <Button color="secondary">SOP</Button>
