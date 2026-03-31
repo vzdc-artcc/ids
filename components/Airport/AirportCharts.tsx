@@ -45,7 +45,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
         current.set(`viewer${tv}`, 'url');
         current.set(`url${tv}`, url);
         router.push(`${pathName}?${current.toString()}#${tv === '1' ? 'viewer' : `viewer${tv}`}`, {
-            scroll: true,
+            scroll: false,
         });
     };
 

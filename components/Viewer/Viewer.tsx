@@ -28,7 +28,7 @@ function ViewerPanel({index, size}: { index: number, size: number }) {
     return (
         <Grid size={size} sx={{border: 1,}}>
             <Typography variant="h6">V{index}</Typography>
-            <Divider color="cyan" sx={{my: 1,}} id={index === 1 ? 'viewer' : `viewer${index}`}/>
+            <Divider color="cyan" sx={{mb: 1,}} id={index === 1 ? 'viewer' : `viewer${index}`}/>
             <Box sx={{height: 550, overflow: 'auto',}}>
                 {display === 'url' && <UrlViewer url={searchParams.get(`url${index}`) || ''}/>}
                 {display === 'emergency' && <EmergencyChecklist/>}

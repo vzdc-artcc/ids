@@ -5,7 +5,7 @@ const theme = createTheme({
     cssVariables: true,
     defaultColorScheme: 'dark',
     colorSchemes: {
-        light: {},
+        light: false,
         dark: {
             palette: {
                 mode: "dark",
