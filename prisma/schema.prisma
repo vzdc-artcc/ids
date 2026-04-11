@@ -210,11 +210,13 @@ model RadarConsolidation {
 }
 
 model DefaultRadarConsolidation {
-  id               String        @id @default(cuid())
-  name             String
-  primarySector    RadarSector   @relation("defaultPrimarySectors", fields: [primarySectorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  primarySectorId  String
-  secondarySectors RadarSector[] @relation("defaultSecondarySectors")
+  id                        String        @id @default(cuid())
+  name                      String
+  primarySector             RadarSector   @relation("defaultPrimarySectors", fields: [primarySectorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  primarySectorId           String
+  secondarySectors          RadarSector[] @relation("defaultSecondarySectors")
+  showButton                Boolean       @default(false)
+  claimAllUnassignedSectors Boolean       @default(false)
 }
 
 model AirspaceDiagram {

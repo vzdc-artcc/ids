@@ -10,6 +10,11 @@ export default function CallsignLookup() {
     const [result, setResult] = useState<CallsignData>();
 
     useEffect(() => {
+        if (!callsign) {
+            setResult(undefined);
+            return;
+        }
+
         if (callsign) {
             getCallsign(callsign).then(setResult);
         }
@@ -25,6 +30,15 @@ export default function CallsignLookup() {
                 <Typography><b>ICAO: </b>{callsign.toUpperCase()}<br/><span
                     style={{color: 'limegreen'}}><b>TELEPHONY: </b>&#34;{result.telephony}&#34;</span><br/><b>NAME: </b>{result.companyName}<br/><b>COUNTRY: </b>{result.country}<br/>{result.isVirtual ?
                     <span style={{color: 'red'}}><b>VIRTUAL AIRLINE</b></span> : <></>}</Typography>
+            }
+            {!result && callsign.length > 0 &&
+                <Box>
+                    <Typography variant="caption">Callsign &#39;{callsign}&#39; does not exist in our
+                        database.</Typography>
+                    <br/>
+                    <Typography variant="caption">Message the web team if you want this callsign added to the database
+                        along with any information about it.</Typography>
+                </Box>
             }
         </Box>
     );

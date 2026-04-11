@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import {Button} from "@mui/material";
-import {WifiOff} from "@mui/icons-material";
+import {IconButton, Tooltip} from "@mui/material";
+import {DeleteForever} from "@mui/icons-material";
 import {deleteConsolidation} from "@/actions/radarConsolidation";
 import {toast} from "react-toastify";
 
@@ -13,6 +13,9 @@ export default function NavConsolidationDeleteButton({ id }: {id: string}) {
     }
 
     return (
-        <Button variant="contained" color="error" size="small" startIcon={<WifiOff />} onClick={handleDelete}>End session</Button>
+        <Tooltip title="Close Position">
+            <IconButton color="error" size="small" onClick={handleDelete} sx={{ml: 1,}}><DeleteForever
+                fontSize="inherit"/></IconButton>
+        </Tooltip>
     );
 }

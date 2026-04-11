@@ -136,6 +136,8 @@ export const createOrUpdateDefaultRadarConsolidation = async (formData: FormData
             id: z.string(),
         }),
         secondarySectors: z.array(z.string()),
+        showButton: z.boolean(),
+        claimAllUnassignedSectors: z.boolean(),
     });
 
     const result = radarConsolidationZ.safeParse({
@@ -145,6 +147,8 @@ export const createOrUpdateDefaultRadarConsolidation = async (formData: FormData
             id: formData.get('primarySector') as string,
         },
         secondarySectors: JSON.parse(formData.get('secondarySectors') as string),
+        showButton: (formData.get('showButton') as string) === 'true',
+        claimAllUnassignedSectors: (formData.get('claimAllUnassignedSectors') as string) === 'true',
     });
 
     if (!result.success) {
@@ -153,7 +157,7 @@ export const createOrUpdateDefaultRadarConsolidation = async (formData: FormData
         };
     }
 
-    const {id, name, primarySector, secondarySectors} = result.data;
+    const {id, name, primarySector, secondarySectors, showButton, claimAllUnassignedSectors} = result.data;
 
     if (secondarySectors.includes(primarySector.id)) {
         return {
@@ -173,6 +177,8 @@ export const createOrUpdateDefaultRadarConsolidation = async (formData: FormData
                     id: sectorId,
                 })),
             },
+            showButton: showButton,
+            claimAllUnassignedSectors: claimAllUnassignedSectors,
         },
         create: {
             name: name,
@@ -186,6 +192,8 @@ export const createOrUpdateDefaultRadarConsolidation = async (formData: FormData
                     id: sectorId,
                 })),
             },
+            showButton: showButton,
+            claimAllUnassignedSectors: claimAllUnassignedSectors,
         },
     });
 

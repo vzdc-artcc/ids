@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
-import {Box, Divider, Grid, Typography} from "@mui/material";
-import {useSearchParams} from "next/navigation";
+import {Box, Button, ButtonGroup, Divider, Grid, Stack, Typography} from "@mui/material";
+import {usePathname, useSearchParams} from "next/navigation";
+import Link from "next/link";
 import UrlViewer from "@/components/Viewer/UrlViewer";
 import EmergencyChecklist from "@/components/Viewer/EmergencyChecklist";
 import PositionChecklist from "@/components/Viewer/PositionChecklist";
@@ -18,42 +19,105 @@ import CallsignLookup from "@/components/Viewer/CallsignLookup";
 
 const VIEWER_COUNT = 4;
 
-function ViewerPanel({index, size}: { index: number, size: number }) {
-    const searchParams = useSearchParams();
-
-    const display = searchParams.get(`viewer${index}`);
-    const facility = searchParams.get(`facility${index}`);
-    const prdStartAirport = searchParams.get(`startAirport${index}`);
-
-    return (
-        <Grid size={size} sx={{border: 1,}}>
-            <Typography variant="h6">V{index}</Typography>
-            <Divider color="cyan" sx={{mb: 1,}} id={index === 1 ? 'viewer' : `viewer${index}`}/>
-            <Box sx={{height: 550, overflow: 'auto',}}>
-                {display === 'url' && <UrlViewer url={searchParams.get(`url${index}`) || ''}/>}
-                {display === 'emergency' && <EmergencyChecklist/>}
-                {display === 'position' && <PositionChecklist/>}
-                {display === 'conflict-probing' && <ConflictProbing/>}
-                {display === 'wx' && <Weather/>}
-                {display === 'sop' && <SopViewer defaultFacility={facility || undefined}/>}
-                {display === 'prd' && <PreferredRoutes startAirport={prdStartAirport || undefined}/>}
-                {display === 'cs' && <CallsignLookup/>}
-                {display === 'airspace' && <Airspace/>}
-                {display === 'set-airport' && <AirportSettings/>}
-                {display === 'set-radar' && <RadarSettings/>}
-                {display === 'consol' && <Consolidation/>}
-                {display === 'rel' && <ReleaseWindow facilityId={facility || ''}/>}
-            </Box>
-        </Grid>
-    );
-}
+const DISPLAY_LABELS: Record<string, string> = {
+    url: 'URL',
+    emergency: 'EMRG',
+    position: 'POS',
+    'conflict-probing': 'CONF-P',
+    wx: 'WX',
+    sop: 'SOP',
+    prd: 'PRD',
+    cs: 'C/S',
+    airspace: 'ARPSC',
+    'set-airport': 'ARP/SET',
+    'set-radar': 'RDR/SET',
+    consol: 'CONSOL',
+    rel: 'REL',
+};
 
 export default function Viewer() {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const tv = searchParams.get('tv') || '1';
+
+    const switchViewer = (n: string) => {
+        const current = new URLSearchParams(searchParams.toString());
+        current.set('tv', n);
+        return `${pathname}?${current.toString()}`;
+    };
+
     return (
-        <Grid container size={12} sx={{mb: 4,}}>
-            {Array.from({length: VIEWER_COUNT}, (_, i) => (
-                <ViewerPanel key={i + 1} index={i + 1} size={VIEWER_COUNT > 2 ? 6 : 12 / i}/>
-            ))}
+        <Grid size={12} sx={{mb: 4, overflow: 'auto', border: 1,}}>
+            <Stack direction="row" spacing={0.5} alignItems="center" sx={{mb: 0.5,}}>
+                <ButtonGroup size="small" variant="contained" disableElevation>
+                    {Array.from({length: VIEWER_COUNT}, (_, i) => {
+                        const n = String(i + 1);
+                        const slotDisplay = searchParams.get(`viewer${n}`);
+                        const baseLabel = slotDisplay === 'url'
+                            ? (searchParams.get(`urlName${n}`) ?? 'URL')
+                            : (DISPLAY_LABELS[slotDisplay ?? ''] ?? slotDisplay?.toUpperCase());
+                        const facilityParam = searchParams.get(`facility${n}`);
+                        const startAirportParam = searchParams.get(`startAirport${n}`);
+                        const subtitle =
+                            (slotDisplay === 'sop' || slotDisplay === 'rel') && facilityParam ? facilityParam :
+                                slotDisplay === 'prd' && startAirportParam ? startAirportParam :
+                                    null;
+                        const label = slotDisplay
+                            ? `V${n} · ${baseLabel}${subtitle ? ` / ${subtitle}` : ''}`
+                            : `V${n}`;
+                        return (
+                            <Link key={n} href={switchViewer(n)} scroll={false} style={{color: 'inherit',}}>
+                                <Button
+                                    color={tv === n ? 'success' : 'inherit'}
+                                    sx={{px: 1.5, minWidth: 80, fontSize: 11,}}
+                                >
+                                    {label}
+                                </Button>
+                            </Link>
+                        );
+                    })}
+                </ButtonGroup>
+            </Stack>
+
+            <Divider color="cyan" sx={{mb: 1,}} id="viewer"/>
+
+            <Box sx={{height: '75vh', overflow: 'auto', border: 1,}}>
+                {Array.from({length: VIEWER_COUNT}, (_, i) => {
+                    const n = String(i + 1);
+                    const slotDisplay = searchParams.get(`viewer${n}`);
+                    const slotFacility = searchParams.get(`facility${n}`);
+                    const slotPrdStart = searchParams.get(`startAirport${n}`);
+                    const slotUrl = searchParams.get(`url${n}`) || '';
+                    const isActive = tv === n;
+
+                    if (!slotDisplay) {
+                        return isActive ? (
+                            <Typography key={n} variant="body2" color="text.secondary"
+                                        sx={{p: 2, textAlign: 'center',}}>
+                                No content loaded. Use the buttons panel to load content into V{n}.
+                            </Typography>
+                        ) : null;
+                    }
+
+                    return (
+                        <Box key={n} sx={{display: isActive ? 'block' : 'none', height: '100%',}}>
+                            {slotDisplay === 'url' && <UrlViewer url={slotUrl}/>}
+                            {slotDisplay === 'emergency' && <EmergencyChecklist/>}
+                            {slotDisplay === 'position' && <PositionChecklist/>}
+                            {slotDisplay === 'conflict-probing' && <ConflictProbing/>}
+                            {slotDisplay === 'wx' && <Weather/>}
+                            {slotDisplay === 'sop' && <SopViewer defaultFacility={slotFacility || undefined}/>}
+                            {slotDisplay === 'prd' && <PreferredRoutes startAirport={slotPrdStart || undefined}/>}
+                            {slotDisplay === 'cs' && <CallsignLookup/>}
+                            {slotDisplay === 'airspace' && <Airspace/>}
+                            {slotDisplay === 'set-airport' && <AirportSettings/>}
+                            {slotDisplay === 'set-radar' && <RadarSettings/>}
+                            {slotDisplay === 'consol' && <Consolidation/>}
+                            {slotDisplay === 'rel' && <ReleaseWindow facilityId={slotFacility || ''}/>}
+                        </Box>
+                    );
+                })}
+            </Box>
         </Grid>
     );
 }
