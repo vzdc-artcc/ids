@@ -6,8 +6,15 @@ export const fetchCharts = async (icao: string) => {
             revalidate: 60 * 60, // 1 hour
         }
     });
-    if (!response.ok) {
+
+    const hoursRes = await fetch(`${process.env.CONFLICT_PROBING_TOWER_HOURS_ENDPOINT}?icao=${encodeURIComponent(icao)}`);
+
+    if (!response.ok || !hoursRes.ok) {
         return  [];
     }
-    return response.json();
+
+    const hoursData = await hoursRes.json();
+    const data = await response.json();
+    data.airport_data.hours = hoursData;
+    return data;
 }

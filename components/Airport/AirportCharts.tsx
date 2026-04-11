@@ -17,6 +17,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
         faa_ident: string,
         airport_name: string,
         is_military: boolean,
+        hours: string,
     }>();
     const router = useRouter();
     const pathName = usePathname();
@@ -70,6 +71,9 @@ export default function AirportCharts({icao}: { icao: string, }) {
                     style={{color: 'red',}}>{airportData.is_military ? '(MILITARY)' : ''}</span></Typography>
                 <Typography
                     variant="caption">{airportData.city}, {airportData.state_full}, {airportData.country}</Typography>
+                <br/>
+                <Typography variant="caption" color="limegreen"
+                            fontWeight="bold">TWR: {airportData.hours === '24' ? 'CONTINUOUS' : airportData.hours}</Typography>
             </Box>}
             {Object.entries(charts || {}).map(([code, charts]) => (
                 <ButtonGroup
