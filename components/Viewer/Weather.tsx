@@ -81,7 +81,10 @@ function SigmetCard({sigmet}: { sigmet: SigWxData }) {
                 <Chip
                     label={sigmet.hazard}
                     size="small"
-                    color="warning"
+                    sx={{
+                        backgroundColor: hazardColor,
+                        color: 'black',
+                    }}
                 />
                 <Typography variant="caption" color="text.secondary">
                     {REGION_LABELS[sigmet.alphaChar] ?? sigmet.alphaChar}
