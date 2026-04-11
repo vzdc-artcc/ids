@@ -27,7 +27,7 @@ import {Delete, Edit} from "@mui/icons-material";
 import {fetchAllDefaultRadarConsolidations} from "@/actions/defaultRadarConsolidation";
 import {fetchAllUsers} from '@/actions/user';
 import {createAuthClient} from "better-auth/react";
-import type {Consolidation, RadarSectorWithRadar, DefaultRadarConsolidationWithSectors} from "@/types/consolidation";
+import type {Consolidation, DefaultRadarConsolidationWithSectors, RadarSectorWithRadar} from "@/types/consolidation";
 
 const authClient = createAuthClient();
 
@@ -173,9 +173,49 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
 
     const handleDefaultConsolidationSelect = (newValue: DefaultRadarConsolidationWithSectors | null) => {
         if (newValue) {
+            setConsolidateAllSectors(newValue.claimAllUnassignedSectors);
             setPrimarySector(newValue.primarySector);
             setSecondarySectors(newValue.secondarySectors);
         }
+    };
+
+    const handleQuickSelectConsolidation = async (consolidation: DefaultRadarConsolidationWithSectors) => {
+        // Set the primary and secondary sectors from the selected default consolidation
+        setPrimarySector(consolidation.primarySector);
+        setSecondarySectors(consolidation.secondarySectors);
+
+        // Set claim unassigned sectors to true if the flag is set on the consolidation
+        if (consolidation.claimAllUnassignedSectors) {
+            setConsolidateAllSectors(true);
+        }
+
+        // Defer the form submission to the next render cycle to ensure state updates are applied
+        setTimeout(async () => {
+            if (!selectedUser) {
+                toast.error('Controller is required');
+                return;
+            }
+
+            const {error} = await createConsolidation(selectedUser.id, consolidation.primarySector.id, consolidation.secondarySectors.map(sector => sector.id), consolidation.claimAllUnassignedSectors ?? false);
+            onCreateSuccess?.();
+            if (error) {
+                toast.error(error);
+                return;
+            }
+            toast.success('Consolidation created successfully');
+
+            fetchAllConsolidations().then((all) => {
+                setAllRadarConsolidations(all);
+            }).catch((error) => {
+                console.error('Error fetching consolidations:', error);
+            });
+
+            setPrimarySector(null);
+            setSecondarySectors([]);
+            setEditMode(null);
+            setConsolidateAllSectors(false);
+            socket.emit('radar-consolidation');
+        }, 0);
     };
 
     return (
@@ -298,6 +338,13 @@ export default function Consolidation({ onlyMe, onCreateSuccess }: {onlyMe?: boo
                         onChange={(event, checked) => setConsolidateAllSectors(checked)}
                     />}
                                       label="Claim ALL unassigned sectors?  You only use this is you are working an enroute position."/>
+                    <Divider sx={{my: 2,}}/>
+                    {allDefaultConsolidations?.filter((c) => c.showButton).map((c) => (
+                        <Button key={c.id} variant="contained" size="small" sx={{m: 1,}}
+                                onClick={() => handleQuickSelectConsolidation(c)}>
+                            {c.name}
+                        </Button>
+                    ))}
                     <Divider sx={{my: 2,}}/>
                     <Button variant="contained" onClick={handleSave}>
                         Create
