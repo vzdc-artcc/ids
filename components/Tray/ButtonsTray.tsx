@@ -44,6 +44,7 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
         current.delete(`viewer${tv}`);
         current.delete(`facility${tv}`);
         current.delete(`url${tv}`);
+        current.delete(`urlName${tv}`);
         current.delete(`startAirport${tv}`);
         return `${pathname}?${current.toString()}`;
     }
@@ -91,10 +92,14 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                     <Button color="secondary">SOP</Button>
                 </Link>
                 <Link scroll={false}
-                      href={redirectToViewer('url', new URLSearchParams({url: `https://vzdc.org/publications/downloads?ids=true&cb=${cacheBuster}`}))}>
+                      href={redirectToViewer('url', new URLSearchParams({
+                          url: `https://vzdc.org/publications/downloads?ids=true&cb=${cacheBuster}`,
+                          urlName: 'PUB'
+                      }))}>
                     <Button color="secondary">PUB</Button>
                 </Link>
-                <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://asx.vzdc.org'}))} scroll={false}>
+                <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://asx.vzdc.org', urlName: 'ASX'}))}
+                      scroll={false}>
                     <Button color="secondary">ASX</Button>
                 </Link>
                 <Link href={redirectToViewer('set-airport')} scroll={false}>
@@ -118,7 +123,8 @@ export default function ButtonsTray({airport, radar,}: { airport?: Airport, rada
                 <Link href="/">
                     <Button variant="contained" color="primary">EXIT</Button>
                 </Link>
-                <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/'}))} scroll={false}
+                <Link href={redirectToViewer('url', new URLSearchParams({url: 'https://vzdc.org/', urlName: 'VZDC'}))}
+                      scroll={false}
                       style={{color: 'inherit'}}>
                     <Button variant="outlined" color="inherit" size="small" style={{borderTopRightRadius:'0px',borderBottomRightRadius:"0px"}}>VZDC WEBSITE</Button>
                 </Link>

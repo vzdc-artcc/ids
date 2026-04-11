@@ -40,10 +40,11 @@ export default function AirportCharts({icao}: { icao: string, }) {
         });
     }, [icao]);
 
-    const navigateToChart = (url: string) => {
+    const navigateToChart = (url: string, name: string) => {
         const current = new URLSearchParams(searchParams.toString());
         current.set(`viewer${tv}`, 'url');
         current.set(`url${tv}`, url);
+        current.set(`urlName${tv}`, name);
         router.push(`${pathName}?${current.toString()}#${tv === '1' ? 'viewer' : `viewer${tv}`}`, {
             scroll: false,
         });
@@ -72,7 +73,8 @@ export default function AirportCharts({icao}: { icao: string, }) {
                         marginLeft:'5px'}}
                 >
                     {charts.map((chart) => (
-                        <Button key={chart.url} onClick={() => navigateToChart(chart.url)}>{chart.name}</Button>
+                        <Button key={chart.url}
+                                onClick={() => navigateToChart(chart.url, `${icao} / ${chart.name}`)}>{chart.name}</Button>
                     ))}
                 </ButtonGroup>
             ))}
