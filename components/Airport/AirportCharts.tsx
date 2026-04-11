@@ -72,8 +72,8 @@ export default function AirportCharts({icao}: { icao: string, }) {
                 <Typography
                     variant="caption">{airportData.city}, {airportData.state_full}, {airportData.country}</Typography>
                 <br/>
-                <Typography variant="caption" color="limegreen"
-                            fontWeight="bold">TWR: {airportData.hours === '24' ? 'CONTINUOUS' : airportData.hours}</Typography>
+                <Typography variant="caption" color="gold"
+                            fontWeight="bold">ATTENDANCE: {airportData.hours === '24' ? 'CONTINUOUS' : airportData.hours}</Typography>
             </Box>}
             {Object.entries(charts || {}).map(([code, charts]) => (
                 <ButtonGroup
