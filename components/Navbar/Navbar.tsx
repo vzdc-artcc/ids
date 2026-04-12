@@ -10,6 +10,7 @@ import {headers} from "next/headers";
 import Link from "next/link";
 import type {Consolidation} from "@/types";
 import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
+import RealtimeStatus from "@/components/Navbar/RealtimeStatus";
 
 const {DEV_MODE, IS_STAFF_ENDPOINT} = process.env;
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
@@ -23,7 +24,7 @@ export default async function Navbar({activeConsol}: {activeConsol?: Consolidati
     const isStaff: boolean = await res.json();
 
     return (
-        <AppBar position="sticky">
+        <AppBar position="sticky" sx={{display: {xs: 'none', lg: 'block'}}}>
             <Toolbar>
                 {session ? <ZuluClock/> : <Logo/>}
                 <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'cyan',}}>
@@ -37,9 +38,11 @@ export default async function Navbar({activeConsol}: {activeConsol?: Consolidati
                 <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'gold',}}>
                     <Typography variant="subtitle1" color={activeConsol ? 'gold' : 'red'}
                                 fontWeight="bold">{activeConsol ? `${activeConsol.primarySector.radar.facilityId} - ${activeConsol.primarySector.identifier}` : 'NO CONSOL'}</Typography>
-                    <Typography variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}</Typography>
+                    <Typography
+                        variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}{activeConsol &&
+                        <NavConsolidationDeleteButton id={activeConsol.id}/>}</Typography>
                 </Box>
-                { activeConsol && <NavConsolidationDeleteButton id={activeConsol.id} /> }
+                <RealtimeStatus/>
                 {TRAINING_MODE && <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'hotpink',}}>
                     <Typography variant="subtitle1" color="hotpink">TRAINING USE ONLY</Typography>
                 </Box>}

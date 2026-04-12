@@ -5,13 +5,14 @@ import {ThemeProvider} from "@mui/material/styles";
 import theme from "@/theme/theme";
 import Navbar from "@/components/Navbar/Navbar";
 import {ToastContainer} from "react-toastify";
-import {Container, Typography} from "@mui/material";
+import {Box, Container, Typography} from "@mui/material";
 import Script from "next/script";
 import {Metadata} from "next";
 import prisma from "@/lib/prisma";
 import {auth} from "@/lib/auth";
 import {headers} from "next/headers";
 import {Consolidation} from "@/types";
+import LoginButton from "@/components/Navbar/LoginButton";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -56,9 +57,12 @@ export default async function RootLayout({
           <AppRouterCacheProvider>
               <ThemeProvider theme={theme}>
                   <Navbar activeConsol={myRadarConsolidation as Consolidation} />
-                  <Container maxWidth="xl" sx={{display: {xs: 'inherit', lg: 'none'},}}>
+                  <Container maxWidth="xl" sx={{display: {xs: 'inherit', lg: 'none'}, m: 2,}}>
                       <Typography variant="h6" textAlign="center">The I.D.S. is not made for smaller screen sizes. Please
                           increase your screen size or zoom out to access the IDS.</Typography>
+                      <Box sx={{textAlign: 'center', m: 2,}}>
+                          <LoginButton/>
+                      </Box>
                   </Container>
                   <Container maxWidth="xl" sx={{display: {xs: 'none', lg: 'inherit'},}}>
                       {children}

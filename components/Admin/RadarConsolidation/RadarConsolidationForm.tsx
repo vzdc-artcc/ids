@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import {DefaultRadarConsolidation, Radar, RadarSector} from "@/generated/prisma/browser";
-import {Autocomplete, Box, Stack, TextField} from "@mui/material";
+import {Autocomplete, Box, FormControlLabel, Stack, Switch, TextField} from "@mui/material";
 import FormSaveButton from "@/components/Admin/Form/FormSaveButton";
 import {createOrUpdateDefaultRadarConsolidation} from "@/actions/defaultRadarConsolidation";
 import {toast} from "react-toastify";
@@ -23,12 +23,16 @@ export default function RadarConsolidationForm({consolidation, allSectors}: {
 
     const [primarySector, setPrimarySector] = React.useState<RadarSectorWithRadars | null>(consolidation?.primarySector || null);
     const [secondarySectors, setSecondarySectors] = React.useState<RadarSectorWithRadars[]>(consolidation?.secondarySectors || []);
+    const [showButton, setShowButton] = React.useState<boolean>(consolidation?.showButton || false);
+    const [claimAllUnassignedSectors, setClaimAllUnassignedSectors] = React.useState<boolean>(consolidation?.claimAllUnassignedSectors || false);
     const router = useRouter();
 
     const handleSubmit = async (formData: FormData) => {
         formData.set('id', consolidation?.id || '');
         formData.set('primarySector', primarySector?.id || '');
         formData.set('secondarySectors', JSON.stringify(secondarySectors.map((s) => s.id)));
+        formData.set('showButton', String(showButton));
+        formData.set('claimAllUnassignedSectors', String(claimAllUnassignedSectors));
 
         const {consolidation: newConsolidation, errors} = await createOrUpdateDefaultRadarConsolidation(formData);
 
@@ -68,6 +72,15 @@ export default function RadarConsolidationForm({consolidation, allSectors}: {
                     renderInput={(params) => <TextField {...params} label="Select Secondary Sectors"
                                                         variant="outlined"/>}
                     sx={{mb: 2}}
+                />
+                <FormControlLabel
+                    control={<Switch checked={showButton} onChange={(event) => setShowButton(event.target.checked)}/>}
+                    label="Show Button"
+                />
+                <FormControlLabel
+                    control={<Switch checked={claimAllUnassignedSectors}
+                                     onChange={(event) => setClaimAllUnassignedSectors(event.target.checked)}/>}
+                    label="Claim All Unassigned"
                 />
                 <Box>
                     <FormSaveButton/>

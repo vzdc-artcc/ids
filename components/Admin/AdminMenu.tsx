@@ -9,7 +9,6 @@ import {
     Home,
     ImportExport,
     ListAlt,
-    PieChart,
     Radar
 } from "@mui/icons-material";
 
@@ -59,14 +58,14 @@ export default function AdminMenu() {
                             <ListItemText primary="Default Consolidations"/>
                         </ListItemButton>
                     </Link>
-                    <Link href="/admin/airspaces" style={{textDecoration: 'none', color: 'inherit',}}>
-                        <ListItemButton>
-                            <ListItemIcon>
-                                <PieChart/>
-                            </ListItemIcon>
-                            <ListItemText primary="Airspace Diagrams"/>
-                        </ListItemButton>
-                    </Link>
+                    {/*<Link href="/admin/airspaces" style={{textDecoration: 'none', color: 'inherit',}}>*/}
+                    {/*    <ListItemButton>*/}
+                    {/*        <ListItemIcon>*/}
+                    {/*            <PieChart/>*/}
+                    {/*        </ListItemIcon>*/}
+                    {/*        <ListItemText primary="Airspace Diagrams"/>*/}
+                    {/*    </ListItemButton>*/}
+                    {/*</Link>*/}
                     <Link href="/admin/tmu" style={{textDecoration: 'none', color: 'inherit',}}>
                         <ListItemButton>
                             <ListItemIcon>

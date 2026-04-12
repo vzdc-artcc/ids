@@ -1,3 +1,4 @@
+// deprecated
 'use client';
 import React, {useEffect, useState} from 'react';
 import {fetchAllAirspaceDiagrams} from "@/actions/airspace";
