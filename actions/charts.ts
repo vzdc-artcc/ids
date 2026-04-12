@@ -1,20 +1,45 @@
 'use server';
 
-export const fetchCharts = async (icao: string) => {
-    const response = await fetch(`https://api-v2.aviationapi.com/v2/charts?airport=${icao.length === 3 ? 'K' + icao.toUpperCase() : icao.toUpperCase()}`, {
+import {AirportData, AtcData, ChartData, ChartsFetchResponse} from "@/types";
+
+export const fetchCharts = async (id: string): Promise<ChartsFetchResponse> => {
+    const response = await fetch(`https://api-v2.aviationapi.com/v2/charts?airport=${id.length === 3 ? 'K' + id.toUpperCase() : id.toUpperCase()}`, {
         next: {
             revalidate: 60 * 60, // 1 hour
-        }
+        },
     });
 
-    const hoursRes = await fetch(`${process.env.CONFLICT_PROBING_TOWER_HOURS_ENDPOINT}?icao=${encodeURIComponent(icao)}`);
-
-    if (!response.ok || !hoursRes.ok) {
-        return  [];
+    if (id.length === 4 && id.startsWith("K")) {
+        id = id.toUpperCase().substring(1);
     }
 
-    const hoursData = await hoursRes.json();
-    const data = await response.json();
-    data.airport_data.hours = hoursData;
+    const atcRes = await fetch(`${process.env.CONFLICT_PROBING_ATC_DATA_ENDPOINT}?id=${encodeURIComponent(id)}`, {
+        next: {
+            revalidate: 60 * 60, // 1 hour
+        },
+    });
+
+    if (!atcRes.ok) {
+        return null;
+    }
+
+    const atcData = await atcRes.json();
+
+    let data: {
+        airport_data?: AirportData,
+        atcData?: AtcData,
+        charts?: Record<string, ChartData[]>,
+    } | null = null;
+
+    if (atcData) {
+        data = {
+            atcData,
+        };
+    }
+
+    if (response.ok) {
+        data = {...data, ...await response.json()};
+    }
+
     return data;
 }

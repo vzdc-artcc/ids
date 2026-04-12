@@ -1,24 +1,16 @@
 'use client';
 import React, {useEffect, useState} from 'react';
-import {Box, Button, ButtonGroup, CircularProgress, Typography} from "@mui/material";
+import {Box, Button, ButtonGroup, CircularProgress, Grid, Typography} from "@mui/material";
 import {fetchCharts} from "@/actions/charts";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {toast} from "react-toastify";
+import {AirportData, AtcData, ChartData, ChartsData} from "@/types";
 
 export default function AirportCharts({icao}: { icao: string, }) {
 
-    const [charts, setCharts] = useState<Record<string, { name: string, url: string, }[]>>();
-    const [airportData, setAirportData] = useState<{
-        city: string,
-        state_abbr: string,
-        state_full: string,
-        country: string,
-        icao_ident: string,
-        faa_ident: string,
-        airport_name: string,
-        is_military: boolean,
-        hours: string,
-    }>();
+    const [charts, setCharts] = useState<ChartsData>();
+    const [airportData, setAirportData] = useState<AirportData>();
+    const [atcData, setAtcData] = useState<AtcData>();
     const router = useRouter();
     const pathName = usePathname();
     const searchParams = useSearchParams();
@@ -26,30 +18,45 @@ export default function AirportCharts({icao}: { icao: string, }) {
 
     useEffect(() => {
         setCharts(undefined);
+        setAirportData(undefined);
+        setAtcData(undefined);
         fetchCharts(icao).then((data) => {
-
-            if (!data || !data.airport_data) {
+            if (!data) {
                 setCharts({});
                 setAirportData(undefined);
-                toast.info('No charts found for this airport.');
+                setAtcData(undefined);
+                toast.info('No data found for this airport.');
                 return;
             }
 
-            type ChartData = {
-                chart_name: string,
-                pdf_url: string,
-            };
-
-            const { airport_diagram, general, departure, arrival, approach } = data.charts
             setAirportData(data.airport_data);
+            setAtcData(data.atcData);
 
-            setCharts({
-                'APD': airport_diagram ? airport_diagram.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
-                'GEN': general ? general.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
-                'DP': departure ? departure.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
-                'STAR': arrival ? arrival.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
-                'IAP': approach ? approach.map((chart: ChartData) => ({ name: chart.chart_name, url: chart.pdf_url })) : [],
-            });
+            if (data.charts) {
+                const {airport_diagram, general, departure, arrival, approach} = data.charts
+                setCharts({
+                    'APD': airport_diagram ? airport_diagram.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
+                    'GEN': general ? general.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
+                    'DP': departure ? departure.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
+                    'STAR': arrival ? arrival.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
+                    'IAP': approach ? approach.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
+                });
+            }
         });
     }, [icao]);
 
@@ -65,16 +72,45 @@ export default function AirportCharts({icao}: { icao: string, }) {
 
     return (
         <Box>
-            {!charts && !airportData && <CircularProgress/>}
-            {airportData && <Box sx={{mb: 2, mx: 1,}}>
-                <Typography variant="subtitle2">{airportData.airport_name} <span
-                    style={{color: 'red',}}>{airportData.is_military ? '(MILITARY)' : ''}</span></Typography>
-                <Typography
-                    variant="caption">{airportData.city}, {airportData.state_full}, {airportData.country}</Typography>
-                <br/>
-                <Typography variant="caption" color="gold"
-                            fontWeight="bold">ATTENDANCE: {airportData.hours === '24' ? 'CONTINUOUS' : (airportData.hours?.trim().length > 0 ? airportData.hours : 'NO TOWER')}</Typography>
-            </Box>}
+            {!charts && !airportData && !atcData && <CircularProgress/>}
+            {(airportData || (atcData && atcData.FACILITY_TYPE?.includes("ATCT"))) &&
+                <Grid container columns={4} spacing={2} sx={{mb: 2, mx: 1,}}>
+                    <Grid size={2}>
+                        <Typography variant="subtitle2">{airportData?.airport_name || atcData?.FACILITY_NAME} <span
+                            style={{color: 'red',}}>{airportData?.is_military ? '(MILITARY)' : ''}</span></Typography>
+                        <Typography
+                            variant="caption">{airportData?.city || atcData?.CITY}, {airportData?.state_full || atcData?.STATE_CODE}, {airportData?.country || atcData?.COUNTRY_CODE}</Typography>
+                        <br/>
+                        <Typography variant="caption" color="gold"><b>ATTENDANCE: {!!atcData ?
+                            (atcData.TWR_HRS === '24' ? 'CONTINUOUS' : ((atcData.TWR_HRS?.trim()?.length || 0) > 0 ? atcData.TWR_HRS : 'NO TOWER'))
+                            : ''}</b> {atcData?.TWR_CALL ? <span
+                            style={{color: 'lime',}}>({`${atcData.TWR_CALL}${atcData.TWR_CALL.endsWith("TOWER") ? '' : ' TOWER'}`})</span> : ''}
+                        </Typography>
+                    </Grid>
+                    {atcData &&
+                        <Grid size={1}>
+                            <Typography variant="caption" fontSize={9} color="cyan">DEP
+                                PRIMARY: {atcData.PRIMARY_DEP_RADIO_CALL} ({atcData.DEP_P_PROVIDER}{getProviderType(atcData.DEP_P_PROV_TYPE_CD)})</Typography>
+                            <br/>
+                            <Typography variant="caption" fontSize={9} color="cyan">APCH
+                                PRIMARY: {atcData.PRIMARY_APCH_RADIO_CALL} ({atcData.APCH_P_PROVIDER}{getProviderType(atcData.APCH_P_PROV_TYPE_CD)})</Typography>
+                            <br/>
+                            <Typography variant="caption" fontSize={8}
+                                        color="text.secondary">{atcData.CTL_PRVDING_HRS == '24' ? '' : atcData.CTL_PRVDING_HRS}</Typography>
+                        </Grid>}
+                    {atcData && atcData.SECONDARY_DEP_RADIO_CALL &&
+                        <Grid size={1}>
+                            <Typography variant="caption" fontSize={9}>DEP
+                                SECONDARY: {atcData.SECONDARY_DEP_RADIO_CALL} ({atcData.DEP_S_PROVIDER}{getProviderType(atcData.DEP_S_PROV_TYPE_CD)})</Typography>
+                            <br/>
+                            <Typography variant="caption" fontSize={9}>APCH
+                                SECONDARY: {atcData.SECONDARY_APCH_RADIO_CALL} ({atcData.APCH_S_PROVIDER}{getProviderType(atcData.APCH_S_PROV_TYPE_CD)})</Typography>
+                            <br/>
+                            <Typography variant="caption" fontSize={8}
+                                        color="text.secondary">{atcData.SECONDARY_CTL_PRVDING_HRS == '24' ? '' : atcData.SECONDARY_CTL_PRVDING_HRS}</Typography>
+                        </Grid>}
+                </Grid>
+            }
             {Object.entries(charts || {}).map(([code, charts]) => (
                 <ButtonGroup
                     key={icao + 'charts' + code}
@@ -119,5 +155,20 @@ export const getChartColor = (chartCode: string) => {
             return 'secondary';
         default:
             return 'inherit';
+    }
+}
+
+const getProviderType = (code: string | undefined) => {
+    switch (code) {
+        case 'A':
+            return ' ATCT';
+        case 'C':
+            return ' ARTCC';
+        case 'S':
+            return ' SPECIAL';
+        case 'T':
+            return ' TRACON';
+        default:
+            return 'N/A';
     }
 }
