@@ -19,6 +19,7 @@ import {auth} from "@/lib/auth";
 import {headers} from "next/headers";
 import ConflictProbingInformation from "@/components/ConflictProbing/ConflictProbingInformation";
 import RadarBorderingSectorsGridItem from "@/components/Radar/RadarBorderingSectorsGridItem";
+import CharlotteLandingDirection from "@/components/Custom/CharlotteLandingDirection";
 
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
 
@@ -90,12 +91,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                 ))}
                 <Grid container columns={10}>
                     <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
+                    { radar.isEnrouteFacility && <Grid size={5} sx={{ border: 1, }}>
+                        <CharlotteLandingDirection />
+                    </Grid> }
                 </Grid>
             </Grid>
             <TmuGridItem facility={radar.facility} big />
             <RadarChartSelector airports={radar.connectedAirports}/>
             {radar.isEnrouteFacility &&
-                <Grid size={3} height={250} sx={{border: 1, overflowY: 'auto' }}>
+                <Grid size={3} height={350} sx={{border: 1, overflowY: 'auto' }}>
                     <ConflictProbingInformation alertsOnly />
                 </Grid> }
             {!radar.isEnrouteFacility && <RadarBorderingSectorsGridItem user={session.user} radar={radar}/>}

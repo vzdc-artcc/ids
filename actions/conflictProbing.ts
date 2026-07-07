@@ -12,10 +12,10 @@ export const fetchConflictProbingData = async (): Promise<ConflictProbingRespons
             'Content-Type': 'application/json',
         },
         cache: 'no-store',
-    });
+    }).catch(() => null);
 
-    if (!res.ok) {
-        return Promise.reject(new Error('Failed to fetch conflict probing data'));
+    if (!res?.ok) {
+        return Promise.reject('Failed to fetch conflict probing data');
     }
 
     return await res.json();
@@ -28,10 +28,10 @@ export const fetchConflictProbingConfig = async (): Promise<ConflictProbingConfi
             'Content-Type': 'application/json',
         },
         cache: 'no-store',
-    });
+    }).catch(() => null);
 
-    if (!res.ok) {
-        return Promise.reject(new Error('Failed to fetch conflict probing config'));
+    if (!res?.ok) {
+        return Promise.reject('Failed to fetch conflict probing config');
     }
 
     return await res.json();

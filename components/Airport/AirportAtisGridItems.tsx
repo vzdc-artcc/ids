@@ -156,7 +156,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                                         textAlign="center">{airportIcao.toUpperCase()}</Typography>
                         </Tooltip>}
                 </Grid>
-                <Grid size={1} sx={{border: 1,}}>
+                <Grid size={1} sx={{border: 1, borderColor: getMetarColor(metar || ''), }}>
                     {!free && !metar && !disableOnlineInformation &&
                         <Stack direction="column" justifyContent="center" alignItems="center">
                             <CircularProgress size={25}/>

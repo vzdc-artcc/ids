@@ -140,30 +140,6 @@ export default function Weather() {
 
     return (
         <Box>
-            <Box sx={{px: 1, mt: 1}}>
-                {[
-                    {label: 'SIGMETs', items: sigmets},
-                    {label: 'AIRMETs', items: airmets},
-                ].map(({label, items}) => (
-                    <Box key={label} sx={{pb: 3}}>
-                        <Typography variant="h6" gutterBottom>
-                            {label}{' '}
-                            <Typography component="span" variant="caption" color="text.secondary">
-                                ({items.length} active)
-                            </Typography>
-                        </Typography>
-                        {items.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary" sx={{pl: 1}}>
-                                No active {label.toLowerCase()}.
-                            </Typography>
-                        ) : (
-                            items.map((sigmet, idx) => (
-                                <SigmetCard key={`${sigmet.seriesId}-${idx}`} sigmet={sigmet}/>
-                            ))
-                        )}
-                    </Box>
-                ))}
-            </Box>
             <Typography textAlign="center" variant="subtitle2">
                 Page might need to be refreshed for up to date data. Check the footer of each feed to confirm that it is
                 current.
@@ -210,7 +186,30 @@ export default function Weather() {
                          alt="CONUS radar"/>
                 </Box>
             </Stack>
-
+            <Box sx={{px: 1, mt: 1}}>
+                {[
+                    {label: 'SIGMETs', items: sigmets},
+                    {label: 'AIRMETs', items: airmets},
+                ].map(({label, items}) => (
+                    <Box key={label} sx={{pb: 3}}>
+                        <Typography variant="h6" gutterBottom>
+                            {label}{' '}
+                            <Typography component="span" variant="caption" color="text.secondary">
+                                ({items.length} active)
+                            </Typography>
+                        </Typography>
+                        {items.length === 0 ? (
+                            <Typography variant="body2" color="text.secondary" sx={{pl: 1}}>
+                                No active {label.toLowerCase()}.
+                            </Typography>
+                        ) : (
+                            items.map((sigmet, idx) => (
+                                <SigmetCard key={`${sigmet.seriesId}-${idx}`} sigmet={sigmet}/>
+                            ))
+                        )}
+                    </Box>
+                ))}
+            </Box>
         </Box>
     );
 }

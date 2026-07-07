@@ -1,13 +1,13 @@
 'use server';
 
-import {AirportData, AtcData, ChartData, ChartsFetchResponse} from "@/types";
+import {AtcData, ChartsFetchResponse} from "@/types";
 
 export const fetchCharts = async (id: string): Promise<ChartsFetchResponse> => {
-    const response = await fetch(`https://api-v2.aviationapi.com/v2/charts?airport=${id.length === 3 ? 'K' + id.toUpperCase() : id.toUpperCase()}`, {
+    const response = await fetch(`https://api-v2.aviationapi.com/v2/charts?airport=${id.toUpperCase()}`, {
         next: {
             revalidate: 60 * 60, // 1 hour
         },
-    });
+    }).catch(() => null);
 
     if (id.length === 4 && id.startsWith("K")) {
         id = id.toUpperCase().substring(1);
@@ -17,28 +17,23 @@ export const fetchCharts = async (id: string): Promise<ChartsFetchResponse> => {
         next: {
             revalidate: 60 * 60, // 1 hour
         },
-    });
+    }).catch(() => null);
 
-    if (!atcRes.ok) {
-        return null;
+    let atcData: AtcData | undefined = undefined;
+
+    if (atcRes?.ok) {
+        atcData = await atcRes.json();
     }
 
-    const atcData = await atcRes.json();
+    let data: ChartsFetchResponse | null;
 
-    let data: {
-        airport_data?: AirportData,
-        atcData?: AtcData,
-        charts?: Record<string, ChartData[]>,
-    } | null = null;
+    data = {
+        atcData: atcData,
+    };
 
-    if (atcData) {
-        data = {
-            atcData,
-        };
-    }
-
-    if (response.ok) {
-        data = {...data, ...await response.json()};
+    if (response?.ok) {
+        const chartsData = await response.json();
+        data = {...data, airport_data: chartsData?.airport_data, charts: chartsData?.charts };
     }
 
     return data;

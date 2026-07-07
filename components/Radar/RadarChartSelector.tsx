@@ -9,7 +9,7 @@ export default function RadarChartSelector({airports}: { airports: Airport[], })
     const [selectedIcao, setSelectedIcao] = useState<string | null>(null);
 
     return (
-        <Grid size={9} height={250} sx={{border: 1, overflowY: 'auto',}}>
+        <Grid size={9} height={350} sx={{border: 1, overflowY: 'auto',}}>
             <Typography variant="h6">CHARTS</Typography>
             <Autocomplete
                 options={airports.map((airport) => airport.icao)}
@@ -18,7 +18,7 @@ export default function RadarChartSelector({airports}: { airports: Airport[], })
                 value={selectedIcao}
                 onChange={(event, newValue) => setSelectedIcao(newValue?.toUpperCase() || null)}
                 renderInput={(params) => <TextField {...params} size="small" label="Select Airport"
-                                                    placeholder="You can also type in any ICAO code."
+                                                    placeholder="Ex. KIAD, W29 (you must include the K for ICAO airports)"
                                                     variant="outlined"/>}
                 sx={{mx: 2, mt: 1,}}
             />
