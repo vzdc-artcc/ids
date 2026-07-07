@@ -1,5 +1,5 @@
 'use client';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Button} from "@mui/material";
 import {toggleCltLandingDirection} from "@/actions/custom";
 import {toast} from "react-toastify";
