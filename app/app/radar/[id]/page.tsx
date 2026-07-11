@@ -1,7 +1,7 @@
 import React from 'react';
 import prisma from "@/lib/prisma";
 import {notFound} from "next/navigation";
-import {Grid} from "@mui/material";
+import {Grid, Paper} from "@mui/material";
 import Viewer from "@/components/Viewer/Viewer";
 import ButtonsTray from "@/components/Tray/ButtonsTray";
 import TmuGridItem from "@/components/Tmu/TmuGridItem";
@@ -20,6 +20,7 @@ import {headers} from "next/headers";
 import ConflictProbingInformation from "@/components/ConflictProbing/ConflictProbingInformation";
 import RadarBorderingSectorsGridItem from "@/components/Radar/RadarBorderingSectorsGridItem";
 import CharlotteLandingDirection from "@/components/Custom/CharlotteLandingDirection";
+import ScrollableAirportList from "@/components/Radar/ScrollableAirportList";
 
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
 
@@ -81,20 +82,32 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         }
     });
 
+    const height = 250;
+    const airportItemHeight = 35;
+    const freeHeight = 40;
+
+    const BottomAirportEntry = (
+        <Grid container columns={10} sx={{ height: freeHeight, }}>
+            <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
+            { radar.isEnrouteFacility && <Grid size={5} sx={{ border: 1, }}>
+                <CharlotteLandingDirection />
+            </Grid> }
+        </Grid>
+    );
+
     return (
         <Grid container columns={12}>
             <MessageListener facility={id} cid={session.user.cid} />
-            <Grid size={8} sx={{border: 1, overflowY: 'auto', height: 250, }}>
-                {radar.connectedAirports.map((airport) => (
-                    <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}
-                                             disableOnlineInformation={TRAINING_MODE}/>
-                ))}
-                <Grid container columns={10}>
-                    <AirportAtisGridItems icao="" small free disableOnlineInformation={TRAINING_MODE}/>
-                    { radar.isEnrouteFacility && <Grid size={5} sx={{ border: 1, }}>
-                        <CharlotteLandingDirection />
-                    </Grid> }
-                </Grid>
+            <Grid size={8} sx={{border: 1, height, position: 'relative' }}>
+                <ScrollableAirportList maxHeight={height - freeHeight}>
+                    {radar.connectedAirports.map((airport) => (
+                        <AirportInformationSmall key={airport.id} airport={airport} runways={airport.runways}
+                                                 disableOnlineInformation={TRAINING_MODE} height={airportItemHeight} />
+                    ))}
+                </ScrollableAirportList>
+                <Paper sx={{ position: 'absolute', width: '100%', bottom: 0, zIndex: 1 }}>
+                    {BottomAirportEntry}
+                </Paper>
             </Grid>
             <TmuGridItem facility={radar.facility} big />
             <RadarChartSelector airports={radar.connectedAirports}/>

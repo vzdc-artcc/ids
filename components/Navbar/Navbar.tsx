@@ -11,6 +11,7 @@ import type {Consolidation} from "@/types";
 import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
 import RealtimeStatus from "@/components/Navbar/RealtimeStatus";
 import Clock from "@/components/Navbar/Clock";
+import VatsimStatus from "@/components/Navbar/VatsimStatus";
 
 const {DEV_MODE, IS_STAFF_ENDPOINT} = process.env;
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
@@ -42,6 +43,7 @@ export default async function Navbar({activeConsol}: {activeConsol?: Consolidati
                         variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}{activeConsol &&
                         <NavConsolidationDeleteButton id={activeConsol.id}/>}</Typography>
                 </Box>
+                <VatsimStatus />
                 <RealtimeStatus/>
                 {TRAINING_MODE && <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'hotpink',}}>
                     <Typography variant="subtitle1" color="hotpink">TRAINING USE ONLY</Typography>
