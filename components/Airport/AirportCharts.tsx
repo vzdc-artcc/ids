@@ -39,10 +39,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
                         name: chart.chart_name,
                         url: chart.pdf_url
                     })) : [],
-                    'GEN': general ? general.map((chart: ChartData) => ({
-                        name: chart.chart_name,
-                        url: chart.pdf_url
-                    })) : [],
+
                     'DP': departure ? departure.map((chart: ChartData) => ({
                         name: chart.chart_name,
                         url: chart.pdf_url
@@ -51,11 +48,17 @@ export default function AirportCharts({icao}: { icao: string, }) {
                         name: chart.chart_name,
                         url: chart.pdf_url
                     })) : [],
+                    'GEN': general ? general.map((chart: ChartData) => ({
+                        name: chart.chart_name,
+                        url: chart.pdf_url
+                    })) : [],
                     'IAP': approach ? approach.map((chart: ChartData) => ({
                         name: chart.chart_name,
                         url: chart.pdf_url
                     })) : [],
                 });
+            } else {
+                setCharts({});
             }
         });
     }, [icao]);
@@ -70,6 +73,30 @@ export default function AirportCharts({icao}: { icao: string, }) {
         });
     };
 
+    const chartsPerRunway: Record<string, { name: string, url: string, }[]> = {};
+
+    if (charts) {
+        const approachCharts = charts['IAP'] || [];
+        approachCharts.forEach((chart) => {
+            const words = chart.name.split(' ');
+            let lastWord = words.pop();
+
+            if (lastWord?.endsWith(')')) {
+                while (!lastWord?.startsWith('(')) {
+                    lastWord = words.pop();
+                }
+                lastWord = words.pop();
+            }
+
+            if (lastWord) {
+                if (!chartsPerRunway[lastWord]) {
+                    chartsPerRunway[lastWord] = [];
+                }
+                chartsPerRunway[lastWord].push(chart);
+            }
+        });
+    }
+
     return (
         <Box>
             {!charts && !airportData && !atcData && <CircularProgress/>}
@@ -83,7 +110,7 @@ export default function AirportCharts({icao}: { icao: string, }) {
                         <br/>
                         <Typography variant="caption" color="gold"><b>ATTENDANCE: {!!atcData ?
                             (atcData.TWR_HRS === '24' ? 'CONTINUOUS' : ((atcData.TWR_HRS?.trim()?.length || 0) > 0 ? atcData.TWR_HRS : 'NO TOWER'))
-                            : ''}</b> {atcData?.TWR_CALL ? <span
+                            : 'Could not fetch attendance data.'}</b> {atcData?.TWR_CALL ? <span
                             style={{color: 'lime',}}>({`${atcData.TWR_CALL}${atcData.TWR_CALL.endsWith("TOWER") ? '' : ' TOWER'}`})</span> : ''}
                         </Typography>
                     </Grid>
@@ -111,31 +138,53 @@ export default function AirportCharts({icao}: { icao: string, }) {
                         </Grid>}
                 </Grid>
             }
-            {Object.entries(charts || {}).map(([code, charts]) => (
-                <ButtonGroup
-                    key={icao + 'charts' + code}
-                    variant="outlined"
-                    size="small"
-                    color={getChartColor(code)}
-                    sx={{mb: 2, flexWrap: 'wrap', 
-                        '& .MuiButtonGroup-middleButton,.MuiButtonGroup-firstButton, .MuiButtonGroup-lastButton': {
-                            borderRightColor: "var(--variant-outlinedBorder)",
-                            borderTopRightRadius: "inherit",
-                            borderBottomRightRadius: "inherit",
-                            borderTopLeftRadius: 'inherit',
-                            borderBottomLeftRadius: 'inherit',
-                            marginLeft: 0,
-                            marginBottom: '5px',
-                            marginRight: '5px'
-                        },
-                        marginLeft:'5px'}}
-                >
-                    {charts.map((chart) => (
-                        <Button key={chart.url}
-                                onClick={() => navigateToChart(chart.url, `${icao} / ${chart.name}`)}>{chart.name}</Button>
-                    ))}
-                </ButtonGroup>
-            ))}
+            <Grid container columns={4}>
+                {Object.entries(charts || {}).map(([code, charts]) => {
+                    if (code === 'IAP') {
+                        return (
+                            <Grid key={icao + 'rwys'} size={4}>
+                                <Grid container columns={5}>
+                                    {Object.entries(chartsPerRunway).map(([runway, charts]) => (
+                                        <Grid key={icao + runway} size={1} sx={{ border: 1, p: 1, textAlign: 'center', }}>
+                                            <Typography color="hotpink" fontWeight="bold">{runway}</Typography>
+                                            <ButtonGroup
+                                                key={icao + 'charts' + code}
+                                                variant="outlined"
+                                                fullWidth
+                                                orientation="vertical"
+                                                size="small"
+                                                color={getChartColor(code)}
+                                            >
+                                                {charts.map((chart) => (
+                                                    <Button key={chart.url}
+                                                            onClick={() => navigateToChart(chart.url, `${icao} / ${chart.name}`)}>{chart.name}</Button>
+                                                ))}
+                                            </ButtonGroup>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Grid>
+                        )
+                    }
+                    return (
+                        <Grid key={icao + 'charts' + code} size={1} sx={{ borderLeft: 1, p: 1, textAlign: 'center', }}>
+                            {/*<Typography variant="caption">{code}</Typography>*/}
+                            <ButtonGroup
+                                variant="outlined"
+                                size="small"
+                                color={getChartColor(code)}
+                                orientation="vertical"
+                                fullWidth
+                            >
+                                {charts.map((chart) => (
+                                    <Button key={chart.url}
+                                            onClick={() => navigateToChart(chart.url, `${icao} / ${chart.name}`)}>{chart.name}</Button>
+                                ))}
+                            </ButtonGroup>
+                        </Grid>
+                    )
+                })}
+            </Grid>
         </Box>
     );
 

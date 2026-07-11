@@ -58,7 +58,7 @@ export default function RadarBorderingSectorsGridItem({user, radar}: { user: Use
     }
 
     return (
-        <Grid size={3} height={250} sx={{border: 1, overflowY: 'auto' }}>
+        <Grid size={3} height={350} sx={{border: 1, overflowY: 'auto' }}>
             {/*<Typography variant="h6">BORDERING SECTORS</Typography>*/}
             <Button variant="outlined" color="info" size="small" onClick={() => {
                 window.location.reload();

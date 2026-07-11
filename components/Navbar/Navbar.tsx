@@ -1,7 +1,6 @@
 import React from 'react';
 import {AppBar, Box, Button, Toolbar, Typography} from "@mui/material";
 import Logo from "@/components/Navbar/Logo";
-import ZuluClock from "@/components/Navbar/ZuluClock";
 import LoginButton from "@/components/Navbar/LoginButton";
 import AppPickerMenu from "@/components/AppPicker/AppPickerMenu";
 import config from '@/package.json' with {type: 'json'};
@@ -11,6 +10,8 @@ import Link from "next/link";
 import type {Consolidation} from "@/types";
 import NavConsolidationDeleteButton from "@/components/Navbar/NavConsolidationDeleteButton";
 import RealtimeStatus from "@/components/Navbar/RealtimeStatus";
+import Clock from "@/components/Navbar/Clock";
+import VatsimStatus from "@/components/Navbar/VatsimStatus";
 
 const {DEV_MODE, IS_STAFF_ENDPOINT} = process.env;
 const TRAINING_MODE = process.env['TRAINING_MODE'] === 'true';
@@ -26,7 +27,7 @@ export default async function Navbar({activeConsol}: {activeConsol?: Consolidati
     return (
         <AppBar position="sticky" sx={{display: {xs: 'none', lg: 'block'}}}>
             <Toolbar>
-                {session ? <ZuluClock/> : <Logo/>}
+                {session ? <Clock/> : <Logo/>}
                 <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'cyan',}}>
                     <Typography variant="subtitle1" color="cyan"
                                 fontWeight="bold">{session?.user.fullName || 'NO SESSION'}</Typography>
@@ -42,6 +43,7 @@ export default async function Navbar({activeConsol}: {activeConsol?: Consolidati
                         variant="subtitle2">{activeConsol ? `+${activeConsol.secondarySectors.length} Sectors` : ''}{activeConsol &&
                         <NavConsolidationDeleteButton id={activeConsol.id}/>}</Typography>
                 </Box>
+                <VatsimStatus />
                 <RealtimeStatus/>
                 {TRAINING_MODE && <Box sx={{ml: 4, p: 0.5, border: 1, borderColor: 'hotpink',}}>
                     <Typography variant="subtitle1" color="hotpink">TRAINING USE ONLY</Typography>
