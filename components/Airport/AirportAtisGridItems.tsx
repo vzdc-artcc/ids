@@ -44,7 +44,6 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
             frequency: string,
             text_atis: string[],
             }[] }) => {
-            console.log('VATSIM data received for ATIS:', data);
             fetchMetar(airportIcao).then(setMetar).catch((error) => {
                 console.error('Error fetching METAR:', error);
             });
@@ -57,7 +56,6 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                 }[])
                     .filter((atis) => airportIcao.length === 4 ? atis.callsign.startsWith(airportIcao) : false);
 
-                console.log(atis);
                 if (atis.length === 0) {
                     setCombinedAtis(undefined);
                     setDepartureAtis(undefined);
@@ -67,7 +65,6 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
 
                 atis.forEach((atis) => {
                     const atisLetter = atis.atis_code || ((atis.text_atis as string[]) || [''])[0]?.match(/ATIS INFO ([A-Z])/i)?.[1] || '-';
-                    console.log('attempting to set ATIS letter to', atisLetter);
                     const atisUpdate = {
                         atisLetter,
                         airportConditions: atis.text_atis?.join(' ') || 'N/A',
@@ -156,7 +153,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                                         textAlign="center">{airportIcao.toUpperCase()}</Typography>
                         </Tooltip>}
                 </Grid>
-                <Grid size={1} sx={{border: 1,}}>
+                <Grid size={1} sx={{border: 1, borderColor: getMetarColor(metar || ''), }}>
                     {!free && !metar && !disableOnlineInformation &&
                         <Stack direction="column" justifyContent="center" alignItems="center">
                             <CircularProgress size={25}/>
@@ -177,7 +174,7 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
                     </Tooltip>}
                     {free && <Tooltip title={metar} arrow>
                         <Typography variant="h6" textAlign="center" color={getMetarColor(metar || '')}
-                                    fontWeight="bold">UNK</Typography>
+                                    fontWeight="bold">METAR</Typography>
                     </Tooltip>}
                 </Grid>
                 <Grid size={2} sx={{border: 1,}}>
