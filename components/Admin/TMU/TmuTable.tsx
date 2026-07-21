@@ -12,6 +12,8 @@ import {socket} from "@/lib/socket";
 
 export default function TmuTable() {
 
+    const [refreshKey, setRefreshKey] = React.useState(0);
+
     const columns: GridColDef[] = [
         {
             field: 'facilities',
@@ -41,13 +43,14 @@ export default function TmuTable() {
             headerName: 'Actions',
             getActions: (params) => [
                 <EditButton key={params.row.id} id={params.row.id} label="Edit Notice"
-                            editUrl={`/admin/tmu/${params.row.id}`}/>,
+                            editUrl={`/app/tmu/${params.row.id}`}/>,
                 <DeleteButton key={params.row.id} id={params.row.id} label="Delete Notice" deleteFunction={deleteTmu}
                               onSuccess={() => {
                                   toast.success('Notice deleted successfully!');
                                   for (const facility of params.row.broadcastedFacilities) {
                                       socket.emit(`${facility.id}-tmu`);
                                   }
+                                  setRefreshKey(prev => prev + 1);
                               }}
                               warningMessage="Are you sure you want to delete this notice? Click again to confirm."/>,
             ],
@@ -59,7 +62,7 @@ export default function TmuTable() {
         <DataTable columns={columns} fetchData={async (pagination, sort, filter) => {
             const fetchedTmu = await fetchTmu(pagination, sort, filter);
             return {data: fetchedTmu[1], rowCount: fetchedTmu[0]};
-        }}/>
+        }} key={refreshKey}/>
     );
 
 }
