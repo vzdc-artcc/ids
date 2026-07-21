@@ -1,6 +1,6 @@
 import React from 'react';
 import prisma from "@/lib/prisma";
-import {Typography} from "@mui/material";
+import {Card, CardContent, Typography} from "@mui/material";
 import {notFound} from "next/navigation";
 import TmuForm from "@/components/Admin/TMU/TmuForm";
 
@@ -33,9 +33,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     });
 
     return (
-        <>
-            <Typography variant="h5" gutterBottom>Edit T.M.U Notice</Typography>
-            <TmuForm tmu={tmu} currentFacilities={tmu.broadcastedFacilities} allFacilities={allFacilities}/>
-        </>
+        <Card>
+            <CardContent>
+                <Typography variant="h5" gutterBottom>Edit T.M.U Notice</Typography>
+                <TmuForm tmu={tmu} currentFacilities={tmu.broadcastedFacilities} allFacilities={allFacilities}/>
+            </CardContent>
+        </Card>
     );
 }

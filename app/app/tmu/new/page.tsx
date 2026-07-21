@@ -1,6 +1,6 @@
 import React from 'react';
 import prisma from "@/lib/prisma";
-import {Typography} from "@mui/material";
+import {Card, CardContent, Typography} from "@mui/material";
 import TmuForm from "@/components/Admin/TMU/TmuForm";
 
 export default async function Page() {
@@ -12,10 +12,12 @@ export default async function Page() {
     });
 
     return (
-        <>
-            <Typography variant="h5" gutterBottom>New T.M.U. Notice</Typography>
-            <TmuForm allFacilities={allFacilities}/>
-        </>
+        <Card>
+            <CardContent>
+                <Typography variant="h5" gutterBottom>New T.M.U. Notice</Typography>
+                <TmuForm allFacilities={allFacilities}/>
+            </CardContent>
+        </Card>
     );
 
 }

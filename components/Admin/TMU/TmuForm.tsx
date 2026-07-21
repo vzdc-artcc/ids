@@ -30,7 +30,7 @@ export default function TmuForm({tmu, currentFacilities, allFacilities}: {
             socket.emit(`${facility.id}-tmu`);
         }
         if (!tmu) {
-            router.push('/admin/tmu');
+            router.push('/app/tmu');
         }
     }
 
@@ -51,7 +51,7 @@ export default function TmuForm({tmu, currentFacilities, allFacilities}: {
                     onChange={(event, newValue) => {
                         setFacilities(newValue.map((facility) => facility.id));
                     }}
-                    renderTags={(value, getTagProps) =>
+                    renderValue={(value, getTagProps) =>
                         value.map((option, index) => (
                             // eslint-disable-next-line react/jsx-key
                             <Chip {...getTagProps({index})} label={option.id}/>
