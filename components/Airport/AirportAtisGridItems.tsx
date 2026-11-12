@@ -44,10 +44,11 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
             frequency: string,
             text_atis: string[],
             }[] }) => {
-            fetchMetar(airportIcao).then(setMetar).catch((error) => {
-                console.error('Error fetching METAR:', error);
-            });
             if (!disableOnlineInformation) {
+                fetchMetar(airportIcao).then(setMetar).catch((error) => {
+                    console.error('Error fetching METAR:', error);
+                });
+
                 const atis = (data.atis as {
                     atis_code: string,
                     callsign: string,
@@ -132,6 +133,10 @@ export default function AirportAtisGridItems({icao, small, free, atisIntegration
     const handleAirportIcaoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newIcao = e.target.value.toUpperCase();
         setAirportIcao(newIcao);
+        if (newIcao.length !== 4) {
+            setMetar(undefined);
+            return;
+        }
         fetchMetar(newIcao).then(setMetar).catch((error) => {
             console.error('Error fetching METAR:', error);
         });

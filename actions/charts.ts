@@ -1,9 +1,13 @@
 'use server';
 
 import {AtcData, ChartsFetchResponse} from "@/types";
+import {USER_AGENT} from "@/lib/userAgent";
 
 export const fetchCharts = async (id: string): Promise<ChartsFetchResponse> => {
     const response = await fetch(`https://api-v2.aviationapi.com/v2/charts?airport=${id.toUpperCase()}`, {
+        headers: {
+            'User-Agent': USER_AGENT,
+        },
         next: {
             revalidate: 60 * 60, // 1 hour
         },
